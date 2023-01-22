@@ -1,7 +1,7 @@
-package com.jnngl.ucore.impl;
+package ru.arbuzikland.ucore.impl;
 
-import com.jnngl.ucore.api.Menu;
-import com.jnngl.ucore.api.Menus;
+import ru.arbuzikland.ucore.api.Menu;
+import ru.arbuzikland.ucore.api.Menus;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.HumanEntity;

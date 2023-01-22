@@ -1,4 +1,4 @@
-package com.jnngl.ucore.api;
+package ru.arbuzikland.ucore.api;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;

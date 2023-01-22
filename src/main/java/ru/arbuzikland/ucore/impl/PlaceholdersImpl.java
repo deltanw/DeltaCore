@@ -1,7 +1,7 @@
-package com.jnngl.ucore.impl;
+package ru.arbuzikland.ucore.impl;
 
-import com.jnngl.ucore.api.Placeholder;
-import com.jnngl.ucore.api.Placeholders;
+import ru.arbuzikland.ucore.api.Placeholder;
+import ru.arbuzikland.ucore.api.Placeholders;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

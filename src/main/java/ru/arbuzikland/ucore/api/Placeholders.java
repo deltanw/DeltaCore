@@ -1,4 +1,4 @@
-package com.jnngl.ucore.api;
+package ru.arbuzikland.ucore.api;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.OfflinePlayer;

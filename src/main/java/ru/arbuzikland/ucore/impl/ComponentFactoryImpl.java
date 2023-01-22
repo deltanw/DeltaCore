@@ -1,6 +1,6 @@
-package com.jnngl.ucore.impl;
+package ru.arbuzikland.ucore.impl;
 
-import com.jnngl.ucore.api.ComponentFactory;
+import ru.arbuzikland.ucore.api.ComponentFactory;
 import java.awt.image.BufferedImage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;

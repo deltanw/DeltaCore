@@ -1,4 +1,4 @@
-package com.jnngl.ucore.api;
+package ru.arbuzikland.ucore.api;
 
 import java.awt.image.BufferedImage;
 import net.kyori.adventure.text.TextComponent;

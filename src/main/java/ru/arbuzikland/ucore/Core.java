@@ -1,12 +1,12 @@
-package com.jnngl.ucore;
+package ru.arbuzikland.ucore;
 
-import com.jnngl.ucore.api.ComponentFactory;
-import com.jnngl.ucore.api.Menus;
-import com.jnngl.ucore.api.Placeholder;
-import com.jnngl.ucore.api.Placeholders;
-import com.jnngl.ucore.impl.ComponentFactoryImpl;
-import com.jnngl.ucore.impl.MenusImpl;
-import com.jnngl.ucore.impl.PlaceholdersImpl;
+import ru.arbuzikland.ucore.api.ComponentFactory;
+import ru.arbuzikland.ucore.api.Menus;
+import ru.arbuzikland.ucore.api.Placeholder;
+import ru.arbuzikland.ucore.api.Placeholders;
+import ru.arbuzikland.ucore.impl.ComponentFactoryImpl;
+import ru.arbuzikland.ucore.impl.MenusImpl;
+import ru.arbuzikland.ucore.impl.PlaceholdersImpl;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
