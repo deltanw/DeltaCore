@@ -77,8 +77,8 @@ publishing {
   repositories {
     maven {
       credentials {
-        setUsername(System.getenv("MAVEN_USERNAME"))
-        setPassword(System.getenv("MAVEN_PASSWORD"))
+        setUsername(project.properties['MAVEN_USERNAME'] ?: System.getenv('MAVEN_USERNAME'))
+        setPassword(project.properties['MAVEN_PASSWORD'] ?: System.getenv('MAVEN_PASSWORD'))
       }
 
       setName("arbuzikland-private")
