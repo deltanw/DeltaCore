@@ -1,6 +1,7 @@
 plugins {
   id 'java-library'
   id 'maven-publish'
+  id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 group = 'ru.arbuzikland'
@@ -72,6 +73,10 @@ javadoc {
   }
 }
 
+shadowJar {
+  getArchiveClassifier() set ''
+}
+
 task sourcesJar(type: Jar) {
   getArchiveClassifier().set("sources")
   from(sourceSets.main.getAllSource())
@@ -104,3 +109,5 @@ artifacts {
   archives(javadocJar)
   archives(sourcesJar)
 }
+
+assemble.dependsOn shadowJar
