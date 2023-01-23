@@ -16,10 +16,15 @@ repositories {
     name = 'sonatype'
     url = 'https://oss.sonatype.org/content/groups/public/'
   }
+  maven {
+    name = 'elytrium-repo'
+    url = 'https://maven.elytrium.net/repo/'
+  }
 }
 
 dependencies {
   compileOnly 'io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT'
+  api 'net.elytrium.commons:config:1.2.1'
 }
 
 def targetJavaVersion = 17
