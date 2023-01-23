@@ -56,8 +56,7 @@ javadoc {
   MinimalJavadocOptions options = getOptions()
   options.setEncoding("UTF-8")
   options.setCharSet("UTF-8")
-  // Mark sources as Java 11 source compatible.
-  options.setSource("11")
+  options.setSource("17")
   options.links("https://docs.oracle.com/en/java/javase/11/docs/api/", "https://jd.adventure.kyori.net/nbt/4.11.0/")
 
   options.addStringOption("Xdoclint:none", "-quiet")

@@ -32,8 +32,8 @@ public class MenusImpl implements Menus {
     if (menu != null) {
       event.setCancelled(true);
       HumanEntity whoClicked = event.getWhoClicked();
-      if (whoClicked instanceof Player) {
-        menu.onClick(event.getRawSlot(), (Player) whoClicked);
+      if (whoClicked instanceof Player player) {
+        menu.onClick(event.getRawSlot(), player);
       }
     }
   }
