@@ -1,5 +1,11 @@
 package ru.arbuzikland.ucore;
 
+import java.util.UUID;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.node.Node;
+import net.luckperms.api.query.QueryOptions;
 import ru.arbuzikland.ucore.api.ComponentFactory;
 import ru.arbuzikland.ucore.api.Menus;
 import ru.arbuzikland.ucore.api.Placeholder;
@@ -14,7 +20,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import javax.imageio.ImageIO;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -22,14 +27,11 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerResourcePackStatusEvent;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Core extends JavaPlugin implements Listener {
@@ -51,6 +53,8 @@ public final class Core extends JavaPlugin implements Listener {
   private Component listHeader;
   private Component listFooter;
   private Component errorComponent;
+
+  private LuckPerms luckPerms;
 
   private Map<String, TextComponent> listComponents(File directory) {
     Map<String, TextComponent> componentMap = new HashMap<>();
@@ -74,26 +78,16 @@ public final class Core extends JavaPlugin implements Listener {
     return componentMap;
   }
 
-  public String getPrefix(Player player) {
-    String prefixValue = player.getEffectivePermissions().stream()
-        .filter(permission -> permission.getValue() && permission.getPermission().startsWith("chat.prefix."))
-        .map(PermissionAttachmentInfo::getPermission)
-        .max(Comparator.comparingInt(permission -> Integer.parseInt(permission.split("\\.")[2])))
-        .orElse("");
-    String[] parts = prefixValue.split("\\.", 4);
-    if (parts.length > 3) {
-      return parts[3];
-    } else {
-      return null;
-    }
-  }
+  public String getPrefix(UUID player) {
+    User user = luckPerms.getUserManager().loadUser(player).join();
 
-  public String getFallbackPrefix(Player player) {
-    String prefixValue = player.getEffectivePermissions().stream()
-        .filter(permission -> permission.getValue() && permission.getPermission().startsWith("chat.fallback_prefix."))
-        .map(PermissionAttachmentInfo::getPermission)
+    String prefixValue = user.resolveDistinctInheritedNodes(QueryOptions.nonContextual())
+        .stream()
+        .filter(node -> node.getValue() && node.getKey().startsWith("chat.prefix."))
+        .map(Node::getKey)
         .max(Comparator.comparingInt(permission -> Integer.parseInt(permission.split("\\.")[2])))
         .orElse("");
+
     String[] parts = prefixValue.split("\\.", 4);
     if (parts.length > 3) {
       return parts[3];
@@ -104,6 +98,8 @@ public final class Core extends JavaPlugin implements Listener {
 
   @Override
   public void onEnable() {
+    this.luckPerms = LuckPermsProvider.get();
+
     this.componentFactory = new ComponentFactoryImpl(PIXELS, PIXELS_EXT);
     this.placeholders = new PlaceholdersImpl();
     this.menus = new MenusImpl();
@@ -144,33 +140,12 @@ public final class Core extends JavaPlugin implements Listener {
 
     this.placeholders.addPlaceholder(new Placeholder(
         "prefix",
-        (data, player) -> {
-          Player online = player.getPlayer();
-          if (online == null) {
-            return Component.empty();
-          }
-
-          if (online.getResourcePackStatus() == PlayerResourcePackStatusEvent.Status.SUCCESSFULLY_LOADED) {
-            return this.prefixes.getOrDefault(this.getPrefix(online), Component.empty());
-          } else {
-            String fallbackPrefix = this.getFallbackPrefix(online);
-            return Optional.ofNullable(fallbackPrefix)
-                .map(prefix -> LegacyComponentSerializer.legacyAmpersand().deserialize(fallbackPrefix))
-                .orElse(Component.empty());
-          }
-        }
+        (data, player) -> this.prefixes.getOrDefault(this.getPrefix(player.getUniqueId()), Component.empty())
     ));
 
     this.placeholders.addPlaceholder(new Placeholder(
         "prefix_string",
-        (data, player) -> {
-          Player online = player.getPlayer();
-          if (online == null) {
-            return Component.empty();
-          }
-
-          return Component.text(Objects.requireNonNullElse(this.getPrefix(online), ""));
-        }
+        (data, player) -> Component.text(Objects.requireNonNullElse(this.getPrefix(player.getUniqueId()), ""))
     ));
 
     try {
@@ -197,6 +172,10 @@ public final class Core extends JavaPlugin implements Listener {
 
   public Component getErrorComponent() {
     return errorComponent;
+  }
+
+  public LuckPerms getLuckPerms() {
+    return luckPerms;
   }
 
   @EventHandler
