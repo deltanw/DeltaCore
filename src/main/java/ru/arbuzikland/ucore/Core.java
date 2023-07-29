@@ -150,8 +150,7 @@ public final class Core extends JavaPlugin implements Listener {
 
     try {
       listHeader = Component.text("ஜ\n\n\n\n");
-      listFooter = Component.text("\nOpen Beta", NamedTextColor.DARK_GRAY)
-          .append(Component.text("\nwww.arbuzikland.ru", TextColor.color(0xDA726A)));
+      listFooter = Component.text("\nwww.arbuzikland.ru", TextColor.color(0xDA726A));
       errorComponent = componentFactory.buildComponent(ImageIO.read(new File(getDataFolder(), "error.png")));
     } catch (IOException e) {
       throw new RuntimeException(e);

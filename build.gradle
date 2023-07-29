@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-  compileOnly 'io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT'
+  compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
   compileOnly 'net.luckperms:api:5.4'
   api 'net.elytrium.commons:config:1.2.1'
 }
@@ -92,7 +92,7 @@ publishing {
       }
 
       setName("arbuzikland-private")
-      setUrl("https://maven.arbuzikland.ru/private/")
+      setUrl("https://arbuzik.jnngl.me/private/")
     }
   }
 

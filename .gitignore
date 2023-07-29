@@ -120,3 +120,5 @@ run/
 # Resource packs
 arbuzik/
 fs/
+
+gradle.properties
