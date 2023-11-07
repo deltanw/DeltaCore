@@ -4,7 +4,7 @@ plugins {
   id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
-group = 'ru.arbuzikland'
+group = 'su.deltanw'
 version = '1.0-SNAPSHOT'
 
 repositories {
@@ -84,18 +84,6 @@ task sourcesJar(type: Jar) {
 }
 
 publishing {
-  repositories {
-    maven {
-      credentials {
-        setUsername(project.properties['MAVEN_USERNAME'] ?: System.getenv('MAVEN_USERNAME'))
-        setPassword(project.properties['MAVEN_PASSWORD'] ?: System.getenv('MAVEN_PASSWORD'))
-      }
-
-      setName("arbuzikland-private")
-      setUrl("https://arbuzik.jnngl.me/private/")
-    }
-  }
-
   publications {
     maven(MavenPublication) {
       from(components.java)
