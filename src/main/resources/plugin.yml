@@ -1,5 +1,5 @@
-name: uCore
+name: DeltaCore
 version: '${version}'
-main: ru.arbuzikland.ucore.Core
+main: su.deltanw.core.Core
 api-version: 1.19
 softdepend: [ luckperms ]
