@@ -1,4 +1,4 @@
-package su.deltanw.ucore.api;
+package su.deltanw.core.api;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;

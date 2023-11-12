@@ -1,4 +1,4 @@
-package su.deltanw.ucore;
+package su.deltanw.core;
 
 import java.util.UUID;
 import net.luckperms.api.LuckPerms;
@@ -6,13 +6,13 @@ import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.query.QueryOptions;
-import su.deltanw.ucore.api.ComponentFactory;
-import su.deltanw.ucore.api.Menus;
-import su.deltanw.ucore.api.Placeholder;
-import su.deltanw.ucore.api.Placeholders;
-import su.deltanw.ucore.impl.ComponentFactoryImpl;
-import su.deltanw.ucore.impl.MenusImpl;
-import su.deltanw.ucore.impl.PlaceholdersImpl;
+import su.deltanw.core.api.ComponentFactory;
+import su.deltanw.core.api.Menus;
+import su.deltanw.core.api.Placeholder;
+import su.deltanw.core.api.Placeholders;
+import su.deltanw.core.impl.ComponentFactoryImpl;
+import su.deltanw.core.impl.MenusImpl;
+import su.deltanw.core.impl.PlaceholdersImpl;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;

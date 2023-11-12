@@ -1,7 +1,7 @@
-package su.deltanw.ucore.impl;
+package su.deltanw.core.impl;
 
-import su.deltanw.ucore.api.Menu;
-import su.deltanw.ucore.api.Menus;
+import su.deltanw.core.api.Menu;
+import su.deltanw.core.api.Menus;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.HumanEntity;

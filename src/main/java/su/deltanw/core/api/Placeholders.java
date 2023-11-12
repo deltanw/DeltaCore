@@ -1,4 +1,4 @@
-package su.deltanw.ucore.api;
+package su.deltanw.core.api;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.OfflinePlayer;

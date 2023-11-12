@@ -1,7 +1,7 @@
-package su.deltanw.ucore.impl;
+package su.deltanw.core.impl;
 
-import su.deltanw.ucore.api.Placeholder;
-import su.deltanw.ucore.api.Placeholders;
+import su.deltanw.core.api.Placeholder;
+import su.deltanw.core.api.Placeholders;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

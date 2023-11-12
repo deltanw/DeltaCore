@@ -1,6 +1,6 @@
-package su.deltanw.ucore.impl;
+package su.deltanw.core.impl;
 
-import su.deltanw.ucore.api.ComponentFactory;
+import su.deltanw.core.api.ComponentFactory;
 import java.awt.image.BufferedImage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;

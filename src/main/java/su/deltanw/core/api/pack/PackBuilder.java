@@ -1,4 +1,4 @@
-package su.deltanw.ucore.api.pack;
+package su.deltanw.core.api.pack;
 
 public interface PackBuilder {
 }

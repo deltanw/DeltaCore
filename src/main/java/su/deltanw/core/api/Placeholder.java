@@ -1,4 +1,4 @@
-package su.deltanw.ucore.api;
+package su.deltanw.core.api;
 
 import java.util.function.BiFunction;
 import net.kyori.adventure.text.Component;

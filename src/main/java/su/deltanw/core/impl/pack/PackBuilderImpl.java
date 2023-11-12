@@ -1,4 +1,4 @@
-package su.deltanw.ucore.impl.pack;
+package su.deltanw.core.impl.pack;
 
 public class PackBuilderImpl {
 }
