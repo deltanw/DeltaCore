@@ -1,2 +1,4 @@
-package ru.arbuzikland.ucore.impl.pack;public class PackUploaderImpl {
+package su.deltanw.ucore.impl.pack;
+
+public class PackUploaderImpl {
 }

@@ -1,7 +1,7 @@
-package ru.arbuzikland.ucore.impl;
+package su.deltanw.ucore.impl;
 
-import ru.arbuzikland.ucore.api.Menu;
-import ru.arbuzikland.ucore.api.Menus;
+import su.deltanw.ucore.api.Menu;
+import su.deltanw.ucore.api.Menus;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.HumanEntity;

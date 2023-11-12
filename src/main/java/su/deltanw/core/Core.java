@@ -1,4 +1,4 @@
-package ru.arbuzikland.ucore;
+package su.deltanw.ucore;
 
 import java.util.UUID;
 import net.luckperms.api.LuckPerms;
@@ -6,13 +6,13 @@ import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.query.QueryOptions;
-import ru.arbuzikland.ucore.api.ComponentFactory;
-import ru.arbuzikland.ucore.api.Menus;
-import ru.arbuzikland.ucore.api.Placeholder;
-import ru.arbuzikland.ucore.api.Placeholders;
-import ru.arbuzikland.ucore.impl.ComponentFactoryImpl;
-import ru.arbuzikland.ucore.impl.MenusImpl;
-import ru.arbuzikland.ucore.impl.PlaceholdersImpl;
+import su.deltanw.ucore.api.ComponentFactory;
+import su.deltanw.ucore.api.Menus;
+import su.deltanw.ucore.api.Placeholder;
+import su.deltanw.ucore.api.Placeholders;
+import su.deltanw.ucore.impl.ComponentFactoryImpl;
+import su.deltanw.ucore.impl.MenusImpl;
+import su.deltanw.ucore.impl.PlaceholdersImpl;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -150,7 +150,7 @@ public final class Core extends JavaPlugin implements Listener {
 
     try {
       listHeader = Component.text("ஜ\n\n\n\n");
-      listFooter = Component.text("\nwww.arbuzikland.ru", TextColor.color(0xDA726A));
+      listFooter = Component.text("\nwww.deltanw.su", TextColor.color(0xDA726A));
       errorComponent = componentFactory.buildComponent(ImageIO.read(new File(getDataFolder(), "error.png")));
     } catch (IOException e) {
       throw new RuntimeException(e);

@@ -1,6 +1,6 @@
-package ru.arbuzikland.ucore.impl;
+package su.deltanw.ucore.impl;
 
-import ru.arbuzikland.ucore.api.ComponentFactory;
+import su.deltanw.ucore.api.ComponentFactory;
 import java.awt.image.BufferedImage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;

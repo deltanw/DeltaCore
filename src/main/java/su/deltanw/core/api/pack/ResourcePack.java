@@ -1,2 +1,4 @@
-package ru.arbuzikland.ucore.api.pack;public class ResourcePack {
+package su.deltanw.ucore.api.pack;
+
+public class ResourcePack {
 }

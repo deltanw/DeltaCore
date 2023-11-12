@@ -1,4 +1,4 @@
-package ru.arbuzikland.ucore.api;
+package su.deltanw.ucore.api;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;

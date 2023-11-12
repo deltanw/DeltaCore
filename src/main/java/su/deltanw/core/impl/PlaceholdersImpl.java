@@ -1,7 +1,7 @@
-package ru.arbuzikland.ucore.impl;
+package su.deltanw.ucore.impl;
 
-import ru.arbuzikland.ucore.api.Placeholder;
-import ru.arbuzikland.ucore.api.Placeholders;
+import su.deltanw.ucore.api.Placeholder;
+import su.deltanw.ucore.api.Placeholders;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
