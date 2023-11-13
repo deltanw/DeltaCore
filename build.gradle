@@ -2,6 +2,7 @@ plugins {
   id 'java-library'
   id 'maven-publish'
   id 'com.github.johnrengelman.shadow' version '7.1.2'
+  id 'io.papermc.paperweight.userdev' version '1.4.0'
 }
 
 group = 'su.deltanw'
@@ -24,6 +25,8 @@ repositories {
 }
 
 dependencies {
+  paperweightDevelopmentBundle 'io.papermc.paper:dev-bundle:1.20.1-R0.1-SNAPSHOT'
+  implementation 'com.jeff-media:custom-block-data:2.2.2'
   compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
   compileOnly 'net.luckperms:api:5.4'
   api 'net.elytrium.commons:config:1.2.1'
@@ -64,7 +67,7 @@ javadoc {
   options.setEncoding("UTF-8")
   options.setCharSet("UTF-8")
   options.setSource("17")
-  options.links("https://docs.oracle.com/en/java/javase/11/docs/api/", "https://jd.adventure.kyori.net/nbt/4.11.0/")
+  options.links("https://docs.oracle.com/en/java/javase/11/docs/api/")
 
   options.addStringOption("Xdoclint:none", "-quiet")
 
@@ -76,6 +79,7 @@ javadoc {
 
 shadowJar {
   getArchiveClassifier() set ''
+  relocate 'com.jeff_media.customblockdata', 'su.deltanw.cbd'
 }
 
 task sourcesJar(type: Jar) {
@@ -99,4 +103,5 @@ artifacts {
   archives(sourcesJar)
 }
 
-assemble.dependsOn shadowJar
+reobfJar.dependsOn shadowJar
+assemble.dependsOn reobfJar

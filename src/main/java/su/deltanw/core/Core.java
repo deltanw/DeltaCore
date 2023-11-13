@@ -1,15 +1,22 @@
 package su.deltanw.core;
 
 import java.util.UUID;
+
+import com.jeff_media.customblockdata.CustomBlockData;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.netty.channel.Channel;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.query.QueryOptions;
+import org.bukkit.NamespacedKey;
 import su.deltanw.core.api.ComponentFactory;
 import su.deltanw.core.api.Menus;
 import su.deltanw.core.api.Placeholder;
 import su.deltanw.core.api.Placeholders;
+import su.deltanw.core.api.injection.Injector;
+import su.deltanw.core.command.DevToolCommand;
 import su.deltanw.core.impl.ComponentFactoryImpl;
 import su.deltanw.core.impl.MenusImpl;
 import su.deltanw.core.impl.PlaceholdersImpl;
@@ -33,6 +40,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import su.deltanw.core.impl.block.CustomBlock;
+import su.deltanw.core.impl.block.CustomBlockListener;
+import su.deltanw.core.impl.block.CustomBlockNettyHandler;
+import su.deltanw.core.impl.injection.InjectorImpl;
 
 public final class Core extends JavaPlugin implements Listener {
 
@@ -48,6 +59,7 @@ public final class Core extends JavaPlugin implements Listener {
 
   private ComponentFactory componentFactory;
   private Placeholders placeholders;
+  private Injector injector;
   private Menus menus;
 
   private Component listHeader;
@@ -98,14 +110,39 @@ public final class Core extends JavaPlugin implements Listener {
 
   @Override
   public void onEnable() {
+    Settings.INSTANCE.reload(new File(getDataFolder(), "config.yml"));
+
     this.luckPerms = LuckPermsProvider.get();
 
+    final InjectorImpl injectorImpl = new InjectorImpl();
     this.componentFactory = new ComponentFactoryImpl(PIXELS, PIXELS_EXT);
     this.placeholders = new PlaceholdersImpl();
+    this.injector = injectorImpl;
     this.menus = new MenusImpl();
+
+    Settings.INSTANCE.CUSTOM_BLOCKS.forEach(value -> {
+      NamespacedKey namespacedKey = NamespacedKey.fromString(value.CUSTOM_BLOCK_KEY, this);
+      try {
+        CustomBlock.register(namespacedKey, value.SERVERSIDE_BLOCK, value.CLIENTSIDE_BLOCK, value.BLOCK_ITEM);
+      } catch (CommandSyntaxException e) {
+        throw new IllegalArgumentException(e);
+      }
+    });
+
+    getLogger().info("Loaded " + Settings.INSTANCE.CUSTOM_BLOCKS.size() + " custom blocks.");
+
+    injector.addInjector(channel ->
+        channel.pipeline().addBefore("packet_handler", "custom_block_handler", new CustomBlockNettyHandler(this)));
+
+    injectorImpl.inject();
+    getLogger().info("Successfully injected.");
 
     Bukkit.getPluginManager().registerEvents(this, this);
     Bukkit.getPluginManager().registerEvents(menus, this);
+    Bukkit.getPluginManager().registerEvents(new CustomBlockListener(this), this);
+    CustomBlockData.registerListener(this);
+
+    Objects.requireNonNull(Bukkit.getPluginCommand("devtool")).setExecutor(new DevToolCommand());
 
     this.placeholders.addPlaceholder(new Placeholder(
         "player_name",
@@ -163,6 +200,10 @@ public final class Core extends JavaPlugin implements Listener {
 
   public Placeholders getPlaceholders() {
     return placeholders;
+  }
+
+  public Injector getInjector() {
+    return injector;
   }
 
   public Menus getMenus() {
