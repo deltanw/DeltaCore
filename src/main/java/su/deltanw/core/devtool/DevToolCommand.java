@@ -1,4 +1,4 @@
-package su.deltanw.core.command;
+package su.deltanw.core.devtool;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
@@ -8,12 +8,19 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import su.deltanw.core.Core;
 import su.deltanw.core.impl.block.CustomBlock;
 
 import java.util.List;
 
 // TODO: переписать на Brigadier
 public class DevToolCommand implements CommandExecutor, TabCompleter {
+
+  private final Core core;
+
+  public DevToolCommand(Core core) {
+    this.core = core;
+  }
 
   @Override
   public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -39,6 +46,10 @@ public class DevToolCommand implements CommandExecutor, TabCompleter {
 
         player.getInventory().addItem(customBlock.item());
         break;
+
+      case "blocks":
+        core.getMenus().openMenu(new BlocksMenu(core, CustomBlock.getAll(), 0), player);
+        break;
     }
 
     return true;
@@ -51,13 +62,13 @@ public class DevToolCommand implements CommandExecutor, TabCompleter {
     }
 
     if (args.length == 1) {
-      return List.of("give");
+      return List.of("blocks", "give");
     }
 
     switch (args[0]) {
       case "give":
         if (args.length == 2) {
-          return CustomBlock.getAll().keySet().stream().map(NamespacedKey::toString).toList();
+          return CustomBlock.getAll().stream().map(CustomBlock::key).map(NamespacedKey::toString).toList();
         }
         break;
     }

@@ -21,6 +21,7 @@ import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public record CustomBlock(NamespacedKey key, BlockState serversideBlock, BlockState clientsideBlock, net.minecraft.world.item.ItemStack serversideItem, ItemStack item) {
@@ -31,8 +32,8 @@ public record CustomBlock(NamespacedKey key, BlockState serversideBlock, BlockSt
   private static final HolderLookup<Block> BLOCK_HOLDER_LOOKUP = HOLDER_LOOKUP_PROVIDER.lookup(Registries.BLOCK).orElseThrow();
   private static final HolderLookup<Item> ITEM_HOLDER_LOOKUP = HOLDER_LOOKUP_PROVIDER.lookup(Registries.ITEM).orElseThrow();
 
-  public static Map<NamespacedKey, CustomBlock> getAll() {
-    return CUSTOM_BLOCK_REGISTRY;
+  public static List<CustomBlock> getAll() {
+    return CUSTOM_BLOCK_REGISTRY.values().stream().toList();
   }
 
   public static CustomBlock get(NamespacedKey key) {

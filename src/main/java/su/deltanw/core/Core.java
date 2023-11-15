@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import com.jeff_media.customblockdata.CustomBlockData;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import io.netty.channel.Channel;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
@@ -16,7 +15,7 @@ import su.deltanw.core.api.Menus;
 import su.deltanw.core.api.Placeholder;
 import su.deltanw.core.api.Placeholders;
 import su.deltanw.core.api.injection.Injector;
-import su.deltanw.core.command.DevToolCommand;
+import su.deltanw.core.devtool.DevToolCommand;
 import su.deltanw.core.impl.ComponentFactoryImpl;
 import su.deltanw.core.impl.MenusImpl;
 import su.deltanw.core.impl.PlaceholdersImpl;
@@ -142,7 +141,7 @@ public final class Core extends JavaPlugin implements Listener {
     Bukkit.getPluginManager().registerEvents(new CustomBlockListener(this), this);
     CustomBlockData.registerListener(this);
 
-    Objects.requireNonNull(Bukkit.getPluginCommand("devtool")).setExecutor(new DevToolCommand());
+    Objects.requireNonNull(Bukkit.getPluginCommand("devtool")).setExecutor(new DevToolCommand(this));
 
     this.placeholders.addPlaceholder(new Placeholder(
         "player_name",
