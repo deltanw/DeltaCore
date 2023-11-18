@@ -186,7 +186,7 @@ public final class Core extends JavaPlugin implements Listener {
 
     try {
       listHeader = Component.text("ஜ\n\n\n\n");
-      listFooter = Component.text("\nwww.deltanw.su", TextColor.color(0xDA726A));
+      listFooter = Component.text("\nwww.deltanw.su", TextColor.color(0xE17F30));
       errorComponent = componentFactory.buildComponent(ImageIO.read(new File(getDataFolder(), "error.png")));
     } catch (IOException e) {
       throw new RuntimeException(e);
