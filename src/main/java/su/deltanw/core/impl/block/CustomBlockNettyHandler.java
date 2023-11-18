@@ -124,6 +124,20 @@ public class CustomBlockNettyHandler extends ChannelDuplexHandler {
     }
   }
 
+  private void forceUpdateNeighboursLight(ChannelHandlerContext ctx, World world, ChunkPos pos) {
+    ServerLevel level = ((CraftWorld) world).getHandle();
+
+    for (int chunkX = pos.x - 1; chunkX <= pos.x + 1; chunkX++) {
+      for (int chunkZ = pos.z - 1; chunkZ <= pos.z + 1; chunkZ++) {
+        if (chunkZ == pos.x && chunkX == pos.z) {
+          continue;
+        }
+
+        ctx.write(new ClientboundLightUpdatePacket(new ChunkPos(chunkX, chunkZ), level.getLightEngine(), null, null));
+      }
+    }
+  }
+
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
     if (msg instanceof ClientboundBlockUpdatePacket packet) {
@@ -165,6 +179,8 @@ public class CustomBlockNettyHandler extends ChannelDuplexHandler {
         }
 
         if (needLightUpdate) {
+          Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
+              forceUpdateNeighboursLight(ctx, player.getWorld(), new ChunkPos(packet.getX(), packet.getZ())));
           FriendlyByteBuf buf = new FriendlyByteBuf(ctx.alloc().ioBuffer());
           buf.writeVarInt(0x27); // 1.20.1 - Update Light
           buf.writeVarInt(packet.getX());
