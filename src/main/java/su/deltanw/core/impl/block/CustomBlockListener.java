@@ -1,7 +1,6 @@
 package su.deltanw.core.impl.block;
 
 import com.jeff_media.customblockdata.CustomBlockData;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -35,7 +34,7 @@ import java.util.Objects;
 
 public class CustomBlockListener implements Listener {
 
-  private final Map<Player, Pair<BlockPos, String>> pendingOperations = new HashMap<>();
+  private final Map<Player, String> pendingOperations = new HashMap<>();
   private final Core plugin;
 
   public CustomBlockListener(Core plugin) {
@@ -44,19 +43,11 @@ public class CustomBlockListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onCustomBlockPlaced(BlockPlaceEvent event) {
-    Pair<BlockPos, String> data = pendingOperations.remove(event.getPlayer());
-    if (data == null) {
+    String key = pendingOperations.remove(event.getPlayer());
+    if (key == null) {
       return;
     }
 
-    Location location = event.getBlockPlaced().getLocation();
-    if (location.getBlockX() != data.getFirst().getX()
-        || location.getBlockY() != data.getFirst().getY()
-        || location.getBlockZ() != data.getFirst().getZ()) {
-      return;
-    }
-
-    String key = data.getSecond();
     event.getPlayer().swingHand(event.getHand());
     CustomBlockData blockData = new CustomBlockData(event.getBlockPlaced(), plugin);
     blockData.set(Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_block")), PersistentDataType.STRING, key);
@@ -130,7 +121,7 @@ public class CustomBlockListener implements Listener {
     Location blockLocation = event.getClickedBlock().getLocation();
     BlockPos nmsPos = new BlockPos(blockLocation.getBlockX(), blockLocation.getBlockY(), blockLocation.getBlockZ());
 
-    pendingOperations.put(event.getPlayer(), Pair.of(nmsPos.relative(nmsDirection), customBlockKey));
+    pendingOperations.put(event.getPlayer(), customBlockKey);
     nmsPlayer.gameMode.useItemOn(nmsPlayer, level, customBlock.serversideItem(),
         event.getHand() == EquipmentSlot.OFF_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND,
         new BlockHitResult(nmsVec, nmsDirection, nmsPos, false));

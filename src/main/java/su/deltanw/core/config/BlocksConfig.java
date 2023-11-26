@@ -1,13 +1,13 @@
-package su.deltanw.core;
+package su.deltanw.core.config;
 
 import net.elytrium.commons.config.YamlConfig;
 
 import java.util.List;
 
-public class Settings extends YamlConfig {
+public class BlocksConfig extends YamlConfig {
 
   @Ignore
-  public static final Settings INSTANCE = new Settings();
+  public static final BlocksConfig INSTANCE = new BlocksConfig();
 
   public List<SerializedCustomBlock> CUSTOM_BLOCKS = List.of();
 

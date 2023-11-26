@@ -15,6 +15,8 @@ import su.deltanw.core.api.Menus;
 import su.deltanw.core.api.Placeholder;
 import su.deltanw.core.api.Placeholders;
 import su.deltanw.core.api.injection.Injector;
+import su.deltanw.core.config.BlocksConfig;
+import su.deltanw.core.config.ItemsConfig;
 import su.deltanw.core.devtool.DevToolCommand;
 import su.deltanw.core.impl.ComponentFactoryImpl;
 import su.deltanw.core.impl.MenusImpl;
@@ -43,6 +45,7 @@ import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.impl.block.CustomBlockListener;
 import su.deltanw.core.impl.block.CustomBlockNettyHandler;
 import su.deltanw.core.impl.injection.InjectorImpl;
+import su.deltanw.core.impl.item.CustomItem;
 
 public final class Core extends JavaPlugin implements Listener {
 
@@ -109,7 +112,8 @@ public final class Core extends JavaPlugin implements Listener {
 
   @Override
   public void onEnable() {
-    Settings.INSTANCE.reload(new File(getDataFolder(), "config.yml"));
+    BlocksConfig.INSTANCE.reload(new File(getDataFolder(), "blocks.yml"));
+    ItemsConfig.INSTANCE.reload(new File(getDataFolder(), "items.yml"));
 
     this.luckPerms = LuckPermsProvider.get();
 
@@ -119,7 +123,7 @@ public final class Core extends JavaPlugin implements Listener {
     this.injector = injectorImpl;
     this.menus = new MenusImpl();
 
-    Settings.INSTANCE.CUSTOM_BLOCKS.forEach(value -> {
+    BlocksConfig.INSTANCE.CUSTOM_BLOCKS.forEach(value -> {
       NamespacedKey namespacedKey = NamespacedKey.fromString(value.CUSTOM_BLOCK_KEY, this);
       try {
         CustomBlock.register(namespacedKey, value.SERVERSIDE_BLOCK, value.CLIENTSIDE_BLOCK, value.BLOCK_ITEM);
@@ -128,7 +132,18 @@ public final class Core extends JavaPlugin implements Listener {
       }
     });
 
-    getLogger().info("Loaded " + Settings.INSTANCE.CUSTOM_BLOCKS.size() + " custom blocks.");
+    getLogger().info("Loaded " + CustomBlock.getAll().size() + " custom blocks.");
+
+    ItemsConfig.INSTANCE.CUSTOM_ITEMS.forEach(value -> {
+      NamespacedKey namespacedKey = NamespacedKey.fromString(value.CUSTOM_ITEM_KEY, this);
+      try {
+        CustomItem.register(namespacedKey, value.SERVERSIDE_ITEM);
+      } catch (CommandSyntaxException e) {
+        throw new IllegalArgumentException(e);
+      }
+    });
+
+    getLogger().info("Loaded " + CustomItem.getAll().size() + " custom items.");
 
     injector.addInjector(channel ->
         channel.pipeline().addBefore("packet_handler", "custom_block_handler", new CustomBlockNettyHandler(this)));

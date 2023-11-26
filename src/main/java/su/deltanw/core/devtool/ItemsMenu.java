@@ -11,11 +11,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import su.deltanw.core.Core;
 import su.deltanw.core.api.Menu;
-import su.deltanw.core.impl.block.CustomBlock;
+import su.deltanw.core.impl.item.CustomItem;
 
 import java.util.List;
 
-public class BlocksMenu implements Menu {
+public class ItemsMenu implements Menu {
 
   private static final ItemStack PREV;
   private static final ItemStack NEXT;
@@ -47,23 +47,23 @@ public class BlocksMenu implements Menu {
   }
 
   private final Core core;
-  private final List<CustomBlock> blocks;
+  private final List<CustomItem> items;
   private int page;
 
-  public BlocksMenu(Core core, List<CustomBlock> blocks, int page) {
+  public ItemsMenu(Core core, List<CustomItem> items, int page) {
     this.core = core;
-    this.blocks = blocks;
+    this.items = items;
     this.page = page;
   }
 
-  public BlocksMenu(Core core, List<CustomBlock> blocks) {
+  public ItemsMenu(Core core, List<CustomItem> blocks) {
     this(core, blocks, 0);
   }
 
   @Override
   public Inventory createInventory(Player player) {
     Inventory inventory = Bukkit.createInventory(player, 54,
-        Component.text(INVENTORY_START + "갖").color(NamedTextColor.WHITE).color(NamedTextColor.WHITE));
+        Component.text(INVENTORY_START + "갗").color(NamedTextColor.WHITE).color(NamedTextColor.WHITE));
 
     ItemStack[] contents = new ItemStack[]{
         null, null, null, null, null, null, null, null, null,
@@ -74,9 +74,9 @@ public class BlocksMenu implements Menu {
         PREV, PREV, null, null, null, null, null, NEXT, NEXT,
     };
 
-    blocks.stream()
+    items.stream()
         .skip(page * 45L).limit(45)
-        .map(CustomBlock::item)
+        .map(CustomItem::item)
         .toList().toArray(contents);
 
     inventory.setContents(contents);
@@ -87,16 +87,16 @@ public class BlocksMenu implements Menu {
   public void onClick(int slot, Player player) {
     if (slot >= 0 && slot < 45) {
       int index = page * 45 + slot;
-      if (index >= blocks.size()) {
+      if (index >= items.size()) {
         return;
       }
 
-      CustomBlock block = blocks.get(index);
-      if (block == null) {
+      CustomItem item = items.get(index);
+      if (item == null) {
         return;
       }
 
-      player.getInventory().addItem(block.item());
+      player.getInventory().addItem(item.item());
     } else if (slot == 45 || slot == 46) {
       if (page == 0) {
         return;
@@ -105,7 +105,7 @@ public class BlocksMenu implements Menu {
       --page;
       core.getMenus().openMenu(this, player);
     } else if (slot == 52 || slot == 53) {
-      if ((page + 1) * 45 >= blocks.size()) {
+      if ((page + 1) * 45 >= items.size()) {
         return;
       }
 

@@ -1,15 +1,18 @@
 package su.deltanw.core.devtool;
 
+import com.google.common.collect.Streams;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import su.deltanw.core.Core;
 import su.deltanw.core.impl.block.CustomBlock;
+import su.deltanw.core.impl.item.CustomItem;
 
 import java.util.List;
 
@@ -33,23 +36,29 @@ public class DevToolCommand implements CommandExecutor, TabCompleter {
     }
 
     switch (args[0]) {
-      case "give":
+      case "give" -> {
         if (args.length < 2) {
           return true;
         }
-
         String key = args[1];
-        CustomBlock customBlock = CustomBlock.get(NamespacedKey.fromString(key));
-        if (customBlock == null) {
-          return true;
+        ItemStack itemToGive = null;
+        NamespacedKey namespacedKey = NamespacedKey.fromString(key);
+        CustomBlock customBlock = CustomBlock.get(namespacedKey);
+        if (customBlock != null) {
+          itemToGive = customBlock.item();
         }
-
-        player.getInventory().addItem(customBlock.item());
-        break;
-
-      case "blocks":
-        core.getMenus().openMenu(new BlocksMenu(core, CustomBlock.getAll(), 0), player);
-        break;
+        if (itemToGive == null) {
+          CustomItem customItem = CustomItem.get(namespacedKey);
+          if (customItem != null) {
+            itemToGive = customItem.item();
+          }
+        }
+        if (itemToGive != null) {
+          player.getInventory().addItem(itemToGive);
+        }
+      }
+      case "blocks" -> core.getMenus().openMenu(new BlocksMenu(core, CustomBlock.getAll(), 0), player);
+      case "items" -> core.getMenus().openMenu(new ItemsMenu(core, CustomItem.getAll(), 0), player);
     }
 
     return true;
@@ -62,13 +71,16 @@ public class DevToolCommand implements CommandExecutor, TabCompleter {
     }
 
     if (args.length == 1) {
-      return List.of("blocks", "give");
+      return List.of("blocks", "give", "items");
     }
 
     switch (args[0]) {
       case "give":
         if (args.length == 2) {
-          return CustomBlock.getAll().stream().map(CustomBlock::key).map(NamespacedKey::toString).toList();
+          return Streams.concat(
+              CustomBlock.getAll().stream().map(CustomBlock::key),
+              CustomItem.getAll().stream().map(CustomItem::key)
+          ).map(NamespacedKey::toString).toList();
         }
         break;
     }
