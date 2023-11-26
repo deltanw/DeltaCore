@@ -2,7 +2,8 @@ name: DeltaCore
 version: '${version}'
 main: su.deltanw.core.Core
 api-version: 1.19
-softdepend: [ luckperms ]
+depend: [ LuckPerms ]
+softdepend: [ FastAsyncWorldEdit ]
 
 commands:
   devtool: {}

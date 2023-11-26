@@ -18,6 +18,7 @@ import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.config.BlocksConfig;
 import su.deltanw.core.config.ItemsConfig;
 import su.deltanw.core.devtool.DevToolCommand;
+import su.deltanw.core.hook.worldedit.WorldEditHook;
 import su.deltanw.core.impl.ComponentFactoryImpl;
 import su.deltanw.core.impl.MenusImpl;
 import su.deltanw.core.impl.PlaceholdersImpl;
@@ -151,6 +152,10 @@ public final class Core extends JavaPlugin implements Listener {
     injectorImpl.inject();
     getLogger().info("Successfully injected.");
 
+    if (WorldEditHook.init(this)) {
+      getLogger().info("Enabled WorldEdit hook.");
+    }
+
     Bukkit.getPluginManager().registerEvents(this, this);
     Bukkit.getPluginManager().registerEvents(menus, this);
     Bukkit.getPluginManager().registerEvents(new CustomBlockListener(this), this);
@@ -237,15 +242,4 @@ public final class Core extends JavaPlugin implements Listener {
     Player player = event.getPlayer();
     player.sendPlayerListHeaderAndFooter(listHeader, listFooter);
   }
-
-  //  @EventHandler
-  //  public void onPreLogin(AsyncPlayerPreLoginEvent event) {
-  //    if (event.getName().equalsIgnoreCase("VuTuV")) {
-  //      event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_BANNED);
-  //      event.kickMessage(
-  //          Component.text("Вы заблокированы на этом сервере!")
-  //              .color(NamedTextColor.RED)
-  //      );
-  //    }
-  //  }
 }

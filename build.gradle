@@ -29,7 +29,11 @@ dependencies {
   implementation 'com.jeff-media:custom-block-data:2.2.2'
   compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
   compileOnly 'net.luckperms:api:5.4'
+  implementation platform('com.intellectualsites.bom:bom-newest:1.39')
+  compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core'
+  compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit'
   api 'net.elytrium.commons:config:1.2.1'
+
 }
 
 def targetJavaVersion = 17
