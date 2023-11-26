@@ -25,31 +25,4 @@ public class WorldEditHook {
   public static boolean isEnabled() {
     return ENABLED;
   }
-
-  public static WorldEditCustomBlockState injectBlockState(BlockState blockState, CustomBlock customBlock) {
-    if (blockState instanceof WorldEditCustomBlockState customBlockState) {
-      return customBlockState;
-    }
-
-    BaseBlock baseBlock = blockState.toBaseBlock();
-    if (baseBlock.getNbtData() != null) {
-      return new WorldEditCustomBlockState(blockState.getBlockType(), blockState.getInternalId(), blockState.getOrdinal(), baseBlock.getNbtData(), customBlock);
-    } else {
-      return new WorldEditCustomBlockState(blockState.getBlockType(), blockState.getInternalId(), blockState.getOrdinal(), customBlock);
-    }
-  }
-
-  public static WorldEditCustomBaseBlock injectBaseBlock(BaseBlock base, CustomBlock customBlock) {
-    if (base instanceof WorldEditCustomBaseBlock customBaseBlock) {
-      return customBaseBlock;
-    }
-
-    if (base.getNbtReference() != null) {
-      return new WorldEditCustomBaseBlock(base.toImmutableState(), base.getNbtReference(), customBlock);
-    } else if (base.getNbtData() != null) {
-      return new WorldEditCustomBaseBlock(base.toImmutableState(), base.getNbtData(), customBlock);
-    } else {
-      return new WorldEditCustomBaseBlock(base.toImmutableState(), customBlock);
-    }
-  }
 }

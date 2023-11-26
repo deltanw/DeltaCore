@@ -31,6 +31,7 @@ import java.util.Objects;
 public record CustomBlock(NamespacedKey key, BlockState serversideBlock, BlockState clientsideBlock, net.minecraft.world.item.ItemStack serversideItem, ItemStack item) {
 
   private static final Map<NamespacedKey, CustomBlock> CUSTOM_BLOCK_REGISTRY = new HashMap<>();
+  private static final Map<String, CustomBlock> CUSTOM_BLOCK_BY_STATE = new HashMap<>();
 
   private static final HolderLookup.Provider HOLDER_LOOKUP_PROVIDER = VanillaRegistries.createLookup();
   private static final HolderLookup<Block> BLOCK_HOLDER_LOOKUP = HOLDER_LOOKUP_PROVIDER.lookup(Registries.BLOCK).orElseThrow();
@@ -42,6 +43,10 @@ public record CustomBlock(NamespacedKey key, BlockState serversideBlock, BlockSt
 
   public static CustomBlock get(NamespacedKey key) {
     return CUSTOM_BLOCK_REGISTRY.get(key);
+  }
+
+  public static CustomBlock getByState(String state) {
+    return CUSTOM_BLOCK_BY_STATE.get(state);
   }
 
   public static CustomBlock register(NamespacedKey key, String serverside, String clientside, ItemStack item) throws CommandSyntaxException {
@@ -58,6 +63,7 @@ public record CustomBlock(NamespacedKey key, BlockState serversideBlock, BlockSt
     serverboundItem.getOrCreateTag().putString("delta__custom_item", key.toString());
     CustomBlock customBlock = new CustomBlock(key, serversideBlockState, clientsideBlockState, serverboundItem, craftItemMirror);
     CUSTOM_BLOCK_REGISTRY.put(key, customBlock);
+    CUSTOM_BLOCK_BY_STATE.put(clientside, customBlock);
     return customBlock;
   }
 
@@ -70,8 +76,8 @@ public record CustomBlock(NamespacedKey key, BlockState serversideBlock, BlockSt
 
   public void place(Plugin plugin, Location location) {
     ServerLevel level = ((CraftWorld) location.getWorld()).getHandle();
-    level.setBlock(new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()), serversideBlock, 11 /* FLAGS????? */);
     CustomBlockData blockData = new CustomBlockData(location.getBlock(), plugin);
     blockData.set(Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_block")), PersistentDataType.STRING, key.asString());
+    level.setBlock(new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()), serversideBlock, 0 /* FLAGS????? */);
   }
 }

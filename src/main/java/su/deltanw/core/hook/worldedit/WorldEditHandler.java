@@ -2,28 +2,35 @@ package su.deltanw.core.hook.worldedit;
 
 import com.jeff_media.customblockdata.CustomBlockData;
 import com.sk89q.jnbt.CompoundTag;
-import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.event.extent.EditSessionEvent;
 import com.sk89q.worldedit.extent.AbstractDelegateExtent;
+import com.sk89q.worldedit.function.operation.Operation;
+import com.sk89q.worldedit.function.operation.RunContext;
 import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.util.eventbus.Subscribe;
-import com.sk89q.worldedit.util.nbt.CompoundBinaryTag;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import com.sk89q.worldedit.world.block.BlockState;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
+import it.unimi.dsi.fastutil.Pair;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.Nullable;
 import su.deltanw.core.Core;
 import su.deltanw.core.impl.block.CustomBlock;
 
-import java.util.Arrays;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class WorldEditHandler {
 
@@ -46,6 +53,9 @@ public class WorldEditHandler {
 
     event.setExtent(new AbstractDelegateExtent(event.getExtent()) {
 
+      private final Queue<Pair<Location, CustomBlock>> customBlockQueue = new ConcurrentLinkedQueue<>();
+      private final Queue<Location> removeBlockQueue = new ConcurrentLinkedQueue<>();
+
       private CustomBlock getCustomBlock(int x, int y, int z) {
         Block block = world.getBlockAt(x, y, z);
         CustomBlockData blockData = new CustomBlockData(block, plugin);
@@ -59,26 +69,22 @@ public class WorldEditHandler {
       }
 
       private BlockState injectBlockState(BlockState state, int x, int y, int z) {
-        if (state instanceof WorldEditCustomBlockState) {
-          return state;
-        }
-
         CustomBlock customBlock = getCustomBlock(x, y, z);
         if (customBlock != null) {
-          return WorldEditHook.injectBlockState(state, customBlock);
+          return BukkitAdapter.adapt(customBlock.clientsideBlock().createCraftBlockData());
         } else {
           return state;
         }
       }
 
       private BaseBlock injectBaseBlock(BaseBlock block, int x, int y, int z) {
-        if (block instanceof WorldEditCustomBaseBlock) {
-          return block;
-        }
-
         CustomBlock customBlock = getCustomBlock(x, y, z);
         if (customBlock != null) {
-          return WorldEditHook.injectBaseBlock(block, customBlock);
+          if (block.getNbtReference() != null) {
+            return BukkitAdapter.adapt(customBlock.clientsideBlock().createCraftBlockData()).toBaseBlock(block.getNbtReference());
+          } else {
+            return BukkitAdapter.adapt(customBlock.clientsideBlock().createCraftBlockData()).toBaseBlock();
+          }
         } else {
           return block;
         }
@@ -105,31 +111,12 @@ public class WorldEditHandler {
 
       @Override
       public <T extends BlockStateHolder<T>> boolean setBlock(int x, int y, int z, T block) throws WorldEditException {
-        CustomBlock customBlock = null;
-        if (block instanceof WorldEditCustomBlockState customBlockState) {
-          customBlock = customBlockState.getCustomBlock();
-        }
-        if (customBlock == null && block.toBaseBlock() instanceof WorldEditCustomBaseBlock customBaseBlock) {
-          customBlock = customBaseBlock.getCustomBlock();
-        }
-        if (customBlock == null) {
-          BaseBlock baseBlock = block.toBaseBlock();
-          CompoundBinaryTag binaryTag = baseBlock.getNbt();
-          if (binaryTag != null) {
-            String customBlockKey = binaryTag.getString("delta__custom_block");
-            if (!customBlockKey.isEmpty()) {
-              customBlock = CustomBlock.get(NamespacedKey.fromString(customBlockKey));
-            }
-          }
-        }
+        CustomBlock customBlock = CustomBlock.getByState(block.getAsString());
         Location loc = new Location(world, x, y, z);
         if (customBlock != null) {
-          CustomBlock targetCustomBlock = customBlock;
-          // TODO: Does PDC support asynchronous operations? Can we just add block to PDC without placing it?
-          Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> targetCustomBlock.place(plugin, loc));
+          customBlockQueue.add(Pair.of(loc, customBlock));
         } else {
-          CustomBlockData blockData = new CustomBlockData(loc.getBlock(), plugin);
-          blockData.remove(Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_block")));
+          removeBlockQueue.add(loc);
         }
 
         return getExtent().setBlock(x, y, z, block);
@@ -140,15 +127,28 @@ public class WorldEditHandler {
         return this.setBlock(location.getX(), location.getY(), location.getZ(), block);
       }
 
-      @Override
-      public boolean setTile(int x, int y, int z, CompoundTag tile) throws WorldEditException {
-        String customBlockKey = tile.getString("delta__custom_block");
-        if (!customBlockKey.isEmpty()) {
-          CustomBlock customBlock = CustomBlock.get(NamespacedKey.fromString(customBlockKey));
-          Location loc = new Location(world, x, y, z);
-          Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> customBlock.place(plugin, loc));
+      private void processRemoveQueue() {
+        Location location;
+        while ((location = removeBlockQueue.poll()) != null) {
+          new CustomBlockData(location.getBlock(), plugin).remove(Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_block")));
         }
-        return super.setTile(x, y, z, tile);
+      }
+
+      private void processCustomBlockQueue() {
+        Pair<Location, CustomBlock> blockData;
+        while ((blockData = customBlockQueue.poll()) != null) {
+          blockData.right().place(plugin, blockData.left());
+        }
+      }
+
+      @Nullable
+      @Override
+      public Operation commit() {
+        Bukkit.getScheduler().runTask(plugin, () -> {
+          processRemoveQueue();
+          processCustomBlockQueue();
+        });
+        return super.commit();
       }
     });
   }

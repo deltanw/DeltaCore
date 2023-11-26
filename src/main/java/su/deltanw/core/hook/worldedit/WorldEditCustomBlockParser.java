@@ -35,6 +35,6 @@ public class WorldEditCustomBlockParser extends InputParser<BaseBlock> {
       return null;
     }
 
-    return new WorldEditCustomBaseBlock(BukkitAdapter.adapt(customBlock.serversideBlock().createCraftBlockData()), customBlock);
+    return BukkitAdapter.adapt(customBlock.clientsideBlock().createCraftBlockData()).toBaseBlock();
   }
 }
