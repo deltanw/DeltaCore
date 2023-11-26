@@ -6,7 +6,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.impl.commands.BrigadierCommand;
-import su.deltanw.core.impl.commands.PlayerSource;
+import su.deltanw.core.impl.commands.CommandSource;
 import su.deltanw.core.impl.commands.arguments.Arguments;
 import su.deltanw.core.impl.item.CustomItem;
 
@@ -20,7 +20,7 @@ public class DevToolCommand extends BrigadierCommand {
   }
 
   @Override
-  public void buildCommand(LiteralArgumentBuilder<PlayerSource> builder) {
+  public void buildCommand(LiteralArgumentBuilder<CommandSource> builder) {
     this.buildDefault(builder);
 
     this.buildBlocks(builder);
@@ -28,30 +28,30 @@ public class DevToolCommand extends BrigadierCommand {
     this.buildGive(builder);
   }
 
-  private void buildDefault(LiteralArgumentBuilder<PlayerSource> builder) {
+  private void buildDefault(LiteralArgumentBuilder<CommandSource> builder) {
     builder.executes(context -> {
       // FIXME: help message?
       return 0;
     });
   }
 
-  private void buildBlocks(LiteralArgumentBuilder<PlayerSource> builder) {
+  private void buildBlocks(LiteralArgumentBuilder<CommandSource> builder) {
     builder.then(Arguments.literal("blocks").executes(ctx -> {
-      PlayerSource source = ctx.getSource();
+      CommandSource source = ctx.getSource();
       source.core().getMenus().openMenu(new BlocksMenu(source.core(), CustomBlock.getAll(), 0), source.asPlayer());
       return 0;
     }));
   }
 
-  private void buildItems(LiteralArgumentBuilder<PlayerSource> builder) {
+  private void buildItems(LiteralArgumentBuilder<CommandSource> builder) {
     builder.then(Arguments.literal("items").executes(ctx -> {
-      PlayerSource source = ctx.getSource();
+      CommandSource source = ctx.getSource();
       source.core().getMenus().openMenu(new ItemsMenu(source.core(), CustomItem.getAll(), 0), source.asPlayer());
       return 0;
     }));
   }
 
-  private void buildGive(LiteralArgumentBuilder<PlayerSource> builder) {
+  private void buildGive(LiteralArgumentBuilder<CommandSource> builder) {
     builder.then(Arguments.namespace("give", Streams.concat(
         CustomBlock.getAll().stream().map(CustomBlock::key),
         CustomItem.getAll().stream().map(CustomItem::key)

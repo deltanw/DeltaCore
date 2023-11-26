@@ -3,7 +3,7 @@ package su.deltanw.core.impl.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import java.util.function.Predicate;
 
-public abstract class BrigadierCommand implements Predicate<PlayerSource> {
+public abstract class BrigadierCommand implements Predicate<CommandSource> {
   private String[] names;
   private String permission;
 
@@ -23,10 +23,10 @@ public abstract class BrigadierCommand implements Predicate<PlayerSource> {
     this.permission = permission;
   }
 
-  public abstract void buildCommand(LiteralArgumentBuilder<PlayerSource> builder);
+  public abstract void buildCommand(LiteralArgumentBuilder<CommandSource> builder);
 
   @Override
-  public boolean test(PlayerSource ctx) {
+  public boolean test(CommandSource ctx) {
     return this.getPermission() == null
            || ctx.hasPermission(this.getPermission());
   }

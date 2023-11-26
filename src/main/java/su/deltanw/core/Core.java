@@ -122,7 +122,7 @@ public final class Core extends JavaPlugin implements Listener {
     this.luckPerms = LuckPermsProvider.get();
 
     final InjectorImpl injectorImpl = new InjectorImpl();
-    this.commandManager = new CommandManager();
+    this.commandManager = new CommandManager(this);
     this.componentFactory = new ComponentFactoryImpl(PIXELS, PIXELS_EXT);
     this.placeholders = new PlaceholdersImpl();
     this.injector = injectorImpl;
@@ -215,6 +215,13 @@ public final class Core extends JavaPlugin implements Listener {
       errorComponent = componentFactory.buildComponent(ImageIO.read(new File(getDataFolder(), "error.png")));
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void onDisable() {
+    if (this.commandManager != null) {
+      this.commandManager.deject();
     }
   }
 

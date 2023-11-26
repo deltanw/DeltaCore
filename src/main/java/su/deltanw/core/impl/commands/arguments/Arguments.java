@@ -8,18 +8,18 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import java.util.List;
 import java.util.stream.Stream;
 import org.bukkit.NamespacedKey;
-import su.deltanw.core.impl.commands.PlayerSource;
+import su.deltanw.core.impl.commands.CommandSource;
 
 public class Arguments {
-  public static LiteralArgumentBuilder<PlayerSource> literal(String literal) {
+  public static LiteralArgumentBuilder<CommandSource> literal(String literal) {
     return LiteralArgumentBuilder.literal(literal);
   }
 
-  public static <T> RequiredArgumentBuilder<PlayerSource, T> argument(String name, ArgumentType<T> type) {
+  public static <T> RequiredArgumentBuilder<CommandSource, T> argument(String name, ArgumentType<T> type) {
     return RequiredArgumentBuilder.argument(name, type);
   }
 
-  public static LiteralArgumentBuilder<PlayerSource> namespace(String name, Stream<NamespacedKey> keys, Command<PlayerSource> command) {
+  public static LiteralArgumentBuilder<CommandSource> namespace(String name, Stream<NamespacedKey> keys, Command<CommandSource> command) {
     List<String> values = keys.map(NamespacedKey::toString).toList();
 
     return literal(name).then(argument(name, StringArgumentType.greedyString()).suggests(

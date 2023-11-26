@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import su.deltanw.core.Core;
 import su.deltanw.core.impl.commands.exceptions.SyntaxException;
 
-public record PlayerSource(Core core, CommandSender sender) {
+public record CommandSource(Core core, CommandSender sender) {
   public boolean hasPermission(String permission) {
     return this.sender.hasPermission(permission);
   }
