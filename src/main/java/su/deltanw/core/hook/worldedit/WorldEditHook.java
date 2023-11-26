@@ -1,11 +1,8 @@
 package su.deltanw.core.hook.worldedit;
 
 import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.world.block.BaseBlock;
-import com.sk89q.worldedit.world.block.BlockState;
 import org.bukkit.Bukkit;
 import su.deltanw.core.Core;
-import su.deltanw.core.impl.block.CustomBlock;
 
 public class WorldEditHook {
 
