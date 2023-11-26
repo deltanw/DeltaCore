@@ -14,6 +14,7 @@ import su.deltanw.core.api.ComponentFactory;
 import su.deltanw.core.api.Menus;
 import su.deltanw.core.api.Placeholder;
 import su.deltanw.core.api.Placeholders;
+import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.config.BlocksConfig;
 import su.deltanw.core.config.ItemsConfig;
@@ -96,6 +97,10 @@ public final class Core extends JavaPlugin implements Listener {
     return componentMap;
   }
 
+  public void registerCommand(BrigadierCommand command) {
+    this.commandManager.register(command);
+  }
+
   public String getPrefix(UUID player) {
     User user = luckPerms.getUserManager().loadUser(player).join();
 
@@ -166,7 +171,7 @@ public final class Core extends JavaPlugin implements Listener {
     Bukkit.getPluginManager().registerEvents(new BrigadierListener(this), this);
     CustomBlockData.registerListener(this);
 
-    this.commandManager.register(new DevToolCommand());
+    this.registerCommand(new DevToolCommand());
 
     this.placeholders.addPlaceholder(new Placeholder(
         "player_name",

@@ -1,4 +1,4 @@
-package su.deltanw.core.impl.commands.exceptions;
+package su.deltanw.core.api.commands;
 
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.exceptions.CommandExceptionType;

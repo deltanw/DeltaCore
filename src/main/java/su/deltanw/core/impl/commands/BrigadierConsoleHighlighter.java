@@ -13,6 +13,7 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import su.deltanw.core.Core;
+import su.deltanw.core.api.commands.CommandSource;
 
 public class BrigadierConsoleHighlighter implements Highlighter {
 

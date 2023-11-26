@@ -1,83 +1,75 @@
 package su.deltanw.core.devtool;
 
+import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
+
 import com.google.common.collect.Streams;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
+import su.deltanw.core.api.Menu;
 import su.deltanw.core.impl.block.CustomBlock;
-import su.deltanw.core.impl.commands.BrigadierCommand;
-import su.deltanw.core.impl.commands.CommandSource;
-import su.deltanw.core.impl.commands.arguments.Arguments;
+import su.deltanw.core.api.commands.BrigadierCommand;
+import su.deltanw.core.api.commands.CommandSource;
+import su.deltanw.core.api.commands.SyntaxException;
 import su.deltanw.core.impl.item.CustomItem;
 
 public class DevToolCommand extends BrigadierCommand {
 
   public DevToolCommand() {
-    this.setNames("devtool");
+    super("devtool");
 
     // FIXME: permission
     // this.setPermission("commands.devtool");
-  }
 
-  @Override
-  public void buildCommand(LiteralArgumentBuilder<CommandSource> builder) {
-    this.buildDefault(builder);
-
-    this.buildBlocks(builder);
-    this.buildItems(builder);
-    this.buildGive(builder);
-  }
-
-  private void buildDefault(LiteralArgumentBuilder<CommandSource> builder) {
-    builder.executes(context -> {
+    this.executes((context, source) -> {
       // FIXME: help message?
-      return 0;
     });
-  }
 
-  private void buildBlocks(LiteralArgumentBuilder<CommandSource> builder) {
-    builder.then(Arguments.literal("blocks").executes(ctx -> {
-      CommandSource source = ctx.getSource();
-      source.core().getMenus().openMenu(new BlocksMenu(source.core(), CustomBlock.getAll(), 0), source.asPlayer());
-      return 0;
-    }));
-  }
+    this.voidArgument("blocks", this::openBlocks, blocks -> { });
+    this.voidArgument("items", this::openItems, items -> { });
 
-  private void buildItems(LiteralArgumentBuilder<CommandSource> builder) {
-    builder.then(Arguments.literal("items").executes(ctx -> {
-      CommandSource source = ctx.getSource();
-      source.core().getMenus().openMenu(new ItemsMenu(source.core(), CustomItem.getAll(), 0), source.asPlayer());
-      return 0;
-    }));
-  }
-
-  private void buildGive(LiteralArgumentBuilder<CommandSource> builder) {
-    builder.then(Arguments.namespace("give", Streams.concat(
+    this.stringArrayArgument("give", greedyString(), Streams.concat(
         CustomBlock.getAll().stream().map(CustomBlock::key),
         CustomItem.getAll().stream().map(CustomItem::key)
-    ), ctx -> {
-      ItemStack itemToGive = null;
-      NamespacedKey namespacedKey = NamespacedKey.fromString(ctx.getArgument("give", String.class));
+    ).map(NamespacedKey::toString).toList(), this::giveItem, give -> { });
+  }
 
-      CustomBlock customBlock = CustomBlock.get(namespacedKey);
-      if (customBlock != null) {
-        itemToGive = customBlock.item();
-      }
+  public void openBlocks(CommandContext<CommandSource> context, CommandSource source) throws SyntaxException {
+    this.openMenu(source, new BlocksMenu(source.core(), CustomBlock.getAll(), 0));
+  }
 
-      if (itemToGive == null) {
-        CustomItem customItem = CustomItem.get(namespacedKey);
-        if (customItem != null) {
-          itemToGive = customItem.item();
-        }
-      }
+  public void openItems(CommandContext<CommandSource> context, CommandSource source) throws SyntaxException {
+    this.openMenu(source, new ItemsMenu(source.core(), CustomItem.getAll(), 0));
+  }
 
-      if (itemToGive != null) {
-        ctx.getSource().asPlayer().getInventory().addItem(itemToGive);
+  public void openMenu(CommandSource source, Menu menu) throws SyntaxException {
+    source.core().getMenus().openMenu(menu, source.asPlayer());
+  }
+
+  public void giveItem(CommandContext<CommandSource> context, CommandSource source, String argument) throws SyntaxException {
+    if (argument == null) {
+      source.sendMessage(Component.text("Использование: /devtool give <ключ>"));
+      return;
+    }
+
+    ItemStack itemToGive = null;
+    NamespacedKey namespacedKey = NamespacedKey.fromString(argument);
+
+    CustomBlock customBlock = CustomBlock.get(namespacedKey);
+    if (customBlock != null) {
+      itemToGive = customBlock.item();
+    }
+
+    if (itemToGive == null) {
+      CustomItem customItem = CustomItem.get(namespacedKey);
+      if (customItem != null) {
+        itemToGive = customItem.item();
       }
-      return 0;
-    })).executes(context -> {
-      // FIXME: help message?
-      return 0;
-    });
+    }
+
+    if (itemToGive != null) {
+      context.getSource().asPlayer().getInventory().addItem(itemToGive);
+    }
   }
 }

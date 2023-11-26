@@ -19,6 +19,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import su.deltanw.core.Core;
+import su.deltanw.core.api.commands.CommandSource;
 
 public class BrigadierListener implements Listener {
 
@@ -30,7 +31,8 @@ public class BrigadierListener implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onCommands(AsyncPlayerSendCommandsEvent<CommandSourceStack> commands) {
-    // Make sure that it runs first time (in Paper's ThreadPool)
+    // This event runs two times. (first one is async and the second one is sync)
+    // Also it is a experimental event, but anyway, it is very useful for this injection {:
     if (!commands.isAsynchronous()) {
       return;
     }
@@ -90,11 +92,13 @@ public class BrigadierListener implements Listener {
     tabComplete.completions(completions);
   }
 
-  @EventHandler(ignoreCancelled = true)
+  @EventHandler
   public void onPlayerSuggestions(AsyncPlayerSendSuggestionsEvent suggestions) {
     Suggestions suggested = this.manager.suggest(suggestions.getBuffer(), suggestions.getPlayer());
     if (!suggested.isEmpty()) {
       suggestions.setSuggestions(suggested);
+
+      // This event can be passed as cancelled by default.
       suggestions.setCancelled(false);
     }
   }

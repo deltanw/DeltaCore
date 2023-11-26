@@ -1,11 +1,10 @@
-package su.deltanw.core.impl.commands;
+package su.deltanw.core.api.commands;
 
 import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import su.deltanw.core.Core;
-import su.deltanw.core.impl.commands.exceptions.SyntaxException;
 
 public record CommandSource(Core core, CommandSender sender) {
   public boolean hasPermission(String permission) {
