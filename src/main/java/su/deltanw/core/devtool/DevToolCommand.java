@@ -75,6 +75,9 @@ public class DevToolCommand extends BrigadierCommand {
         ctx.getSource().asPlayer().getInventory().addItem(itemToGive);
       }
       return 0;
-    }));
+    })).executes(context -> {
+      // FIXME: help message?
+      return 0;
+    });
   }
 }
