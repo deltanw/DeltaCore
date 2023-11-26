@@ -86,6 +86,7 @@ public class BrigadierListener implements Listener {
 
       source.sendMessage(ComponentUtils.fromMessage(syntax.getRawMessage()));
     } catch (Throwable throwable) {
+      LOGGER.error("Command exception: " + command.getMessage(), throwable);
       source.sendMessage(Component.translatable("command.failed"));
     }
 
