@@ -81,7 +81,7 @@ public class CommandManager {
       // No command found
       SimpleCommandExceptionType exceptionType =
           CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand();
-      if (exceptionType == syntax.getType()) {
+      if (exceptionType == syntax.getType() && results.getContext().getRange().isEmpty()) {
         return false;
       }
 
