@@ -4,6 +4,3 @@ main: su.deltanw.core.Core
 api-version: 1.19
 depend: [ LuckPerms ]
 softdepend: [ FastAsyncWorldEdit ]
-
-commands:
-  devtool: {}

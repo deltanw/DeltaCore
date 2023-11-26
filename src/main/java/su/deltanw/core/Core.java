@@ -45,6 +45,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.impl.block.CustomBlockListener;
 import su.deltanw.core.impl.block.CustomBlockNettyHandler;
+import su.deltanw.core.impl.commands.BrigadierListener;
+import su.deltanw.core.impl.commands.CommandManager;
 import su.deltanw.core.impl.injection.InjectorImpl;
 import su.deltanw.core.impl.item.CustomItem;
 
@@ -60,6 +62,7 @@ public final class Core extends JavaPlugin implements Listener {
 
   private final Map<String, TextComponent> prefixes = new HashMap<>();
 
+  private CommandManager commandManager;
   private ComponentFactory componentFactory;
   private Placeholders placeholders;
   private Injector injector;
@@ -119,6 +122,7 @@ public final class Core extends JavaPlugin implements Listener {
     this.luckPerms = LuckPermsProvider.get();
 
     final InjectorImpl injectorImpl = new InjectorImpl();
+    this.commandManager = new CommandManager();
     this.componentFactory = new ComponentFactoryImpl(PIXELS, PIXELS_EXT);
     this.placeholders = new PlaceholdersImpl();
     this.injector = injectorImpl;
@@ -159,9 +163,10 @@ public final class Core extends JavaPlugin implements Listener {
     Bukkit.getPluginManager().registerEvents(this, this);
     Bukkit.getPluginManager().registerEvents(menus, this);
     Bukkit.getPluginManager().registerEvents(new CustomBlockListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new BrigadierListener(this), this);
     CustomBlockData.registerListener(this);
 
-    Objects.requireNonNull(Bukkit.getPluginCommand("devtool")).setExecutor(new DevToolCommand(this));
+    this.commandManager.register(new DevToolCommand());
 
     this.placeholders.addPlaceholder(new Placeholder(
         "player_name",
@@ -211,6 +216,10 @@ public final class Core extends JavaPlugin implements Listener {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public CommandManager getCommandManager() {
+    return this.commandManager;
   }
 
   public ComponentFactory getComponentFactory() {

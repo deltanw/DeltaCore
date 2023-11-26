@@ -1,90 +1,80 @@
 package su.deltanw.core.devtool;
 
 import com.google.common.collect.Streams;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import org.bukkit.NamespacedKey;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import su.deltanw.core.Core;
 import su.deltanw.core.impl.block.CustomBlock;
+import su.deltanw.core.impl.commands.BrigadierCommand;
+import su.deltanw.core.impl.commands.PlayerSource;
+import su.deltanw.core.impl.commands.arguments.Arguments;
 import su.deltanw.core.impl.item.CustomItem;
 
-import java.util.List;
+public class DevToolCommand extends BrigadierCommand {
 
-// TODO: переписать на Brigadier
-public class DevToolCommand implements CommandExecutor, TabCompleter {
+  public DevToolCommand() {
+    this.setNames("devtool");
 
-  private final Core core;
-
-  public DevToolCommand(Core core) {
-    this.core = core;
+    // FIXME: permission
+    // this.setPermission("commands.devtool");
   }
 
   @Override
-  public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-    if (!(sender instanceof Player player)) {
-      return true;
-    }
+  public void buildCommand(LiteralArgumentBuilder<PlayerSource> builder) {
+    this.buildDefault(builder);
 
-    if (args.length < 1) {
-      return true;
-    }
+    this.buildBlocks(builder);
+    this.buildItems(builder);
+    this.buildGive(builder);
+  }
 
-    switch (args[0]) {
-      case "give" -> {
-        if (args.length < 2) {
-          return true;
-        }
-        String key = args[1];
-        ItemStack itemToGive = null;
-        NamespacedKey namespacedKey = NamespacedKey.fromString(key);
-        CustomBlock customBlock = CustomBlock.get(namespacedKey);
-        if (customBlock != null) {
-          itemToGive = customBlock.item();
-        }
-        if (itemToGive == null) {
-          CustomItem customItem = CustomItem.get(namespacedKey);
-          if (customItem != null) {
-            itemToGive = customItem.item();
-          }
-        }
-        if (itemToGive != null) {
-          player.getInventory().addItem(itemToGive);
+  private void buildDefault(LiteralArgumentBuilder<PlayerSource> builder) {
+    builder.executes(context -> {
+      // FIXME: help message?
+      return 0;
+    });
+  }
+
+  private void buildBlocks(LiteralArgumentBuilder<PlayerSource> builder) {
+    builder.then(Arguments.literal("blocks").executes(ctx -> {
+      PlayerSource source = ctx.getSource();
+      source.core().getMenus().openMenu(new BlocksMenu(source.core(), CustomBlock.getAll(), 0), source.asPlayer());
+      return 0;
+    }));
+  }
+
+  private void buildItems(LiteralArgumentBuilder<PlayerSource> builder) {
+    builder.then(Arguments.literal("items").executes(ctx -> {
+      PlayerSource source = ctx.getSource();
+      source.core().getMenus().openMenu(new ItemsMenu(source.core(), CustomItem.getAll(), 0), source.asPlayer());
+      return 0;
+    }));
+  }
+
+  private void buildGive(LiteralArgumentBuilder<PlayerSource> builder) {
+    builder.then(Arguments.namespace("give", Streams.concat(
+        CustomBlock.getAll().stream().map(CustomBlock::key),
+        CustomItem.getAll().stream().map(CustomItem::key)
+    ), ctx -> {
+      ItemStack itemToGive = null;
+      NamespacedKey namespacedKey = NamespacedKey.fromString(ctx.getArgument("give", String.class));
+
+      CustomBlock customBlock = CustomBlock.get(namespacedKey);
+      if (customBlock != null) {
+        itemToGive = customBlock.item();
+      }
+
+      if (itemToGive == null) {
+        CustomItem customItem = CustomItem.get(namespacedKey);
+        if (customItem != null) {
+          itemToGive = customItem.item();
         }
       }
-      case "blocks" -> core.getMenus().openMenu(new BlocksMenu(core, CustomBlock.getAll(), 0), player);
-      case "items" -> core.getMenus().openMenu(new ItemsMenu(core, CustomItem.getAll(), 0), player);
-    }
 
-    return true;
-  }
-
-  @Override
-  public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-    if (args.length == 0) {
-      return null;
-    }
-
-    if (args.length == 1) {
-      return List.of("blocks", "give", "items");
-    }
-
-    switch (args[0]) {
-      case "give":
-        if (args.length == 2) {
-          return Streams.concat(
-              CustomBlock.getAll().stream().map(CustomBlock::key),
-              CustomItem.getAll().stream().map(CustomItem::key)
-          ).map(NamespacedKey::toString).toList();
-        }
-        break;
-    }
-
-    return null;
+      if (itemToGive != null) {
+        ctx.getSource().asPlayer().getInventory().addItem(itemToGive);
+      }
+      return 0;
+    }));
   }
 }
