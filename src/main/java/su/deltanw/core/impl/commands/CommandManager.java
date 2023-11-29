@@ -3,7 +3,6 @@ package su.deltanw.core.impl.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.BuiltInExceptionProvider;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.logging.LogUtils;
@@ -14,7 +13,7 @@ import org.slf4j.Logger;
 import su.deltanw.core.Core;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.commands.CommandSource;
-import su.deltanw.core.api.commands.SyntaxException;
+import su.deltanw.core.api.commands.CommandException;
 
 public class CommandManager {
 
@@ -34,8 +33,8 @@ public class CommandManager {
   }
 
   public void reload() {
-    SyntaxExceptions.INSTANCE.reload();
-    this.translator.mapTypes(CommandSyntaxException.BUILT_IN_EXCEPTIONS, SyntaxExceptions.INSTANCE);
+    CommandExceptions.INSTANCE.reload();
+    this.translator.mapTypes(CommandSyntaxException.BUILT_IN_EXCEPTIONS, CommandExceptions.INSTANCE);
   }
 
   public void register(BrigadierCommand command) {
@@ -86,15 +85,15 @@ public class CommandManager {
       }
 
       CommandSyntaxException translated = this.translator.translate(syntax);
-      if (translated instanceof SyntaxException customSyntax) {
-        source.sendSyntaxHighlight(input, customSyntax);
+      if (translated instanceof CommandException exception) {
+        source.sendSyntaxHighlight(input, exception);
         return true;
       }
 
       source.sendMessage(ComponentUtils.fromMessage(translated.getRawMessage()));
     } catch (Throwable throwable) {
       LOGGER.error("Command exception: " + input, throwable);
-      source.sendMessage(SyntaxExceptions.INSTANCE.commandFailed);
+      source.sendMessage(CommandExceptions.INSTANCE.commandFailed);
     }
 
     return true;

@@ -9,13 +9,13 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.elytrium.commons.config.Placeholders;
 import net.kyori.adventure.text.Component;
 import su.deltanw.core.Core;
-import su.deltanw.core.api.commands.SyntaxException;
+import su.deltanw.core.api.commands.CommandException;
 import su.deltanw.core.config.MessagesConfig;
 import su.deltanw.core.config.MessagesConfig.Brigadier;
 
-public class SyntaxExceptions implements BuiltInExceptionProvider {
+public class CommandExceptions implements BuiltInExceptionProvider {
 
-  public static final SyntaxExceptions INSTANCE = new SyntaxExceptions();
+  public static final CommandExceptions INSTANCE = new CommandExceptions();
 
   public SimpleCommandExceptionType playersOnly;
   public DynamicCommandExceptionType playerNotFound;
@@ -96,7 +96,7 @@ public class SyntaxExceptions implements BuiltInExceptionProvider {
   }
 
   public static SimpleCommandExceptionType deserializeStatic(String message) {
-    SyntaxException constant = new SyntaxException(Core.getSerializer().deserialize(message));
+    CommandException constant = new CommandException(Core.getSerializer().deserialize(message));
     return new SimpleCommandExceptionType(null) {
       @Override
       public CommandSyntaxException create() {
@@ -105,14 +105,14 @@ public class SyntaxExceptions implements BuiltInExceptionProvider {
 
       @Override
       public CommandSyntaxException createWithContext(ImmutableStringReader reader) {
-        return new SyntaxException(constant.getComponent(), reader.getString(), reader.getCursor());
+        return new CommandException(constant.getComponent(), reader.getString(), reader.getCursor());
       }
     };
   }
 
   public static DynamicCommandExceptionType deserializeDynamic(String message) {
     if (!hasPlaceholders(message)) {
-      SyntaxException constant = new SyntaxException(Core.getSerializer().deserialize(message));
+      CommandException constant = new CommandException(Core.getSerializer().deserialize(message));
       return new DynamicCommandExceptionType(null) {
         @Override
         public CommandSyntaxException create(Object arg) {
@@ -121,7 +121,7 @@ public class SyntaxExceptions implements BuiltInExceptionProvider {
 
         @Override
         public CommandSyntaxException createWithContext(ImmutableStringReader reader, Object arg) {
-          return new SyntaxException(constant.getComponent(), reader.getString(), reader.getCursor());
+          return new CommandException(constant.getComponent(), reader.getString(), reader.getCursor());
         }
       };
     }
@@ -129,19 +129,19 @@ public class SyntaxExceptions implements BuiltInExceptionProvider {
     return new DynamicCommandExceptionType(null) {
       @Override
       public CommandSyntaxException create(Object arg) {
-        return new SyntaxException(Core.getSerializer().deserialize(Placeholders.replace(message, arg)));
+        return new CommandException(Core.getSerializer().deserialize(Placeholders.replace(message, arg)));
       }
 
       @Override
       public CommandSyntaxException createWithContext(ImmutableStringReader reader, Object arg) {
-        return new SyntaxException(Core.getSerializer().deserialize(Placeholders.replace(message, arg)), reader.getString(), reader.getCursor());
+        return new CommandException(Core.getSerializer().deserialize(Placeholders.replace(message, arg)), reader.getString(), reader.getCursor());
       }
     };
   }
 
   public static Dynamic2CommandExceptionType deserializeDynamicDouble(String message) {
     if (!hasPlaceholders(message)) {
-      SyntaxException constant = new SyntaxException(Core.getSerializer().deserialize(message));
+      CommandException constant = new CommandException(Core.getSerializer().deserialize(message));
       return new Dynamic2CommandExceptionType(null) {
         @Override
         public CommandSyntaxException create(Object a, Object b) {
@@ -150,7 +150,7 @@ public class SyntaxExceptions implements BuiltInExceptionProvider {
 
         @Override
         public CommandSyntaxException createWithContext(ImmutableStringReader reader, Object a, Object b) {
-          return new SyntaxException(constant.getComponent(), reader.getString(), reader.getCursor());
+          return new CommandException(constant.getComponent(), reader.getString(), reader.getCursor());
         }
       };
     }
@@ -158,12 +158,12 @@ public class SyntaxExceptions implements BuiltInExceptionProvider {
     return new Dynamic2CommandExceptionType(null) {
       @Override
       public CommandSyntaxException create(Object a, Object b) {
-        return new SyntaxException(Core.getSerializer().deserialize(Placeholders.replace(message, a, b)));
+        return new CommandException(Core.getSerializer().deserialize(Placeholders.replace(message, a, b)));
       }
 
       @Override
       public CommandSyntaxException createWithContext(ImmutableStringReader reader, Object a, Object b) {
-        return new SyntaxException(Core.getSerializer().deserialize(Placeholders.replace(message, a, b)), reader.getString(), reader.getCursor());
+        return new CommandException(Core.getSerializer().deserialize(Placeholders.replace(message, a, b)), reader.getString(), reader.getCursor());
       }
     };
   }

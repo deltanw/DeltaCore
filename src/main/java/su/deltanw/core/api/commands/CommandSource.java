@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import su.deltanw.core.Core;
 import su.deltanw.core.config.MessagesConfig;
-import su.deltanw.core.impl.commands.SyntaxExceptions;
+import su.deltanw.core.impl.commands.CommandExceptions;
 
 public record CommandSource(Core core, CommandSender sender) {
   public boolean hasPermission(String permission) {
@@ -38,23 +38,23 @@ public record CommandSource(Core core, CommandSender sender) {
       return player;
     }
 
-    throw SyntaxExceptions.INSTANCE.playersOnly.create();
+    throw CommandExceptions.INSTANCE.playersOnly.create();
   }
 
-  public void sendSyntaxHighlight(String input, SyntaxException syntax) {
-    net.kyori.adventure.text.Component component = syntax.getComponent();
+  public void sendSyntaxHighlight(String input, CommandException exception) {
+    net.kyori.adventure.text.Component component = exception.getComponent();
 
-    if (syntax.getInput() != null && syntax.getCursor() >= 0) {
-      int cursor = Math.min(syntax.getInput().length(), syntax.getCursor());
+    if (exception.getInput() != null && exception.getCursor() >= 0) {
+      int cursor = Math.min(exception.getInput().length(), exception.getCursor());
 
       component = component.append(text("\n"));
-      String argument = syntax.getInput().substring(Math.max(0, cursor - 10), cursor);
+      String argument = exception.getInput().substring(Math.max(0, cursor - 10), cursor);
       if (cursor > 10) {
         argument = "..." + argument;
       }
 
       argument += Placeholders.replace(MessagesConfig.INSTANCE.BRIGADIER.COMMAND_INCORRECT_PART,
-          syntax.getInput().substring(cursor));
+          exception.getInput().substring(cursor));
 
       component = component.append(Core.getSerializer().deserialize(
           Placeholders.replace(MessagesConfig.INSTANCE.BRIGADIER.COMMAND_SYNTAX, argument)));

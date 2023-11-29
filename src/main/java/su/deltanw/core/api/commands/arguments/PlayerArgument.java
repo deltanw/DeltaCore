@@ -1,6 +1,5 @@
 package su.deltanw.core.api.commands.arguments;
 
-import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -11,7 +10,7 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanFunction;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import su.deltanw.core.impl.commands.SyntaxExceptions;
+import su.deltanw.core.impl.commands.CommandExceptions;
 
 public class PlayerArgument implements CustomArgumentType<Player, String> {
 
@@ -25,7 +24,7 @@ public class PlayerArgument implements CustomArgumentType<Player, String> {
   public Player parse(String playerName) throws CommandSyntaxException {
     Player player = Bukkit.getPlayerExact(playerName);
     if (player == null || !this.allowedPlayer.apply(player)) {
-      throw SyntaxExceptions.INSTANCE.playerNotFound.create(playerName);
+      throw CommandExceptions.INSTANCE.playerNotFound.create(playerName);
     }
 
     return player;
