@@ -23,16 +23,19 @@ public class CommandManager {
   private final Core core;
   private final CommandDispatcher<CommandSource> dispatcher = new CommandDispatcher<>();
   private final BrigadierConsoleHighlighter highlighter;
+  private final BrigadierTranslator translator;
 
   public CommandManager(Core core) {
     this.core = core;
     this.highlighter = new BrigadierConsoleHighlighter(core);
+    this.translator = new BrigadierTranslator();
 
     this.reload();
   }
 
   public void reload() {
     SyntaxExceptions.INSTANCE.reload();
+    this.translator.mapTypes(CommandSyntaxException.BUILT_IN_EXCEPTIONS, SyntaxExceptions.INSTANCE);
   }
 
   public void register(BrigadierCommand command) {
@@ -69,38 +72,32 @@ public class CommandManager {
   }
 
   public boolean executeCommand(String input, CommandSender sender) {
-    BuiltInExceptionProvider previousProvider = CommandSyntaxException.BUILT_IN_EXCEPTIONS;
+    ParseResults<CommandSource> results = this.parseCommand(input, sender);
+    CommandSource source = results.getContext().getSource();
+
     try {
-      CommandSyntaxException.BUILT_IN_EXCEPTIONS = SyntaxExceptions.INSTANCE;
-
-      ParseResults<CommandSource> results = this.parseCommand(input, sender);
-      CommandSource source = results.getContext().getSource();
-
-      try {
-        this.getDispatcher().execute(results);
-      } catch (CommandRuntimeException exception) {
-        source.sendMessage(exception.getComponent());
-      } catch (CommandSyntaxException syntax) {
-        // No usable command found
-        if (results.getContext().getNodes().isEmpty()) {
-          return false;
-        }
-
-        if (syntax instanceof SyntaxException customSyntax) {
-          source.sendSyntaxHighlight(input, customSyntax);
-          return true;
-        }
-
-        source.sendMessage(ComponentUtils.fromMessage(syntax.getRawMessage()));
-      } catch (Throwable throwable) {
-        LOGGER.error("Command exception: " + input, throwable);
-        source.sendMessage(SyntaxExceptions.INSTANCE.commandFailed);
+      this.getDispatcher().execute(results);
+    } catch (CommandRuntimeException exception) {
+      source.sendMessage(exception.getComponent());
+    } catch (CommandSyntaxException syntax) {
+      // No usable command found
+      if (results.getContext().getNodes().isEmpty()) {
+        return false;
       }
 
-      return true;
-    } finally {
-      CommandSyntaxException.BUILT_IN_EXCEPTIONS = previousProvider;
+      CommandSyntaxException translated = this.translator.translate(syntax);
+      if (translated instanceof SyntaxException customSyntax) {
+        source.sendSyntaxHighlight(input, customSyntax);
+        return true;
+      }
+
+      source.sendMessage(ComponentUtils.fromMessage(translated.getRawMessage()));
+    } catch (Throwable throwable) {
+      LOGGER.error("Command exception: " + input, throwable);
+      source.sendMessage(SyntaxExceptions.INSTANCE.commandFailed);
     }
+
+    return true;
   }
 
   public void deject() {
