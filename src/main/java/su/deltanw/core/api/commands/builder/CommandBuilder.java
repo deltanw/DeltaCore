@@ -11,18 +11,17 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import it.unimi.dsi.fastutil.objects.Object2BooleanFunction;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import su.deltanw.core.api.commands.CommandSource;
 import su.deltanw.core.api.commands.ExecutableCommand;
-import su.deltanw.core.impl.commands.BrigadierReflection;
-import su.deltanw.core.impl.commands.SyntaxExceptions;
+import su.deltanw.core.api.commands.arguments.PlayerArgument;
 
 public class CommandBuilder extends com.mojang.brigadier.builder.ArgumentBuilder<CommandSource, CommandBuilder> {
+
   private String name;
 
   protected CommandBuilder(String name) {
@@ -34,10 +33,7 @@ public class CommandBuilder extends com.mojang.brigadier.builder.ArgumentBuilder
   }
 
   public CommandBuilder executes(ExecutableCommand executable) {
-    return this.executes(context -> {
-      executable.execute(context, context.getSource());
-      return 0;
-    });
+    return super.executes(executable);
   }
 
   public CommandBuilder subcommand(String literal, Consumer<CommandBuilder> builder) {
@@ -123,35 +119,19 @@ public class CommandBuilder extends com.mojang.brigadier.builder.ArgumentBuilder
     return this.argument(name, LongArgumentType.longArg(), command, builder);
   }
 
-  public CommandBuilder playerArgument(String name, Function<Player, Boolean> shouldSuggest,
-      ExecutableCommand executable, Consumer<ArgumentBuilder<String>> builder) {
-    return this.stringArrayArgument(name, StringArgumentType.string(), (context, suggest) -> {
-      String remaining = suggest.getRemaining();
-      for (Player player : Bukkit.getOnlinePlayers()) {
-        if (shouldSuggest.apply(player)) {
-          String playerName = player.getName();
-          if (playerName.startsWith(remaining)) {
-            suggest.suggest(playerName);
-          }
-        }
-      }
-    }, (context, source) -> {
-      String playerName = context.getArgument(name, String.class);
-      Player player = Bukkit.getPlayerExact(playerName);
-      if (player == null) {
-        throw SyntaxExceptions.INSTANCE.playerNotFound.create(playerName);
-      }
-
-      BrigadierReflection.replaceArgument(context, name, player);
-      executable.execute(context, source);
-    }, builder);
+  public CommandBuilder playerArgument(String name, Object2BooleanFunction<Player> allowedPlayer,
+      ExecutableCommand executable, Consumer<ArgumentBuilder<Player>> builder) {
+    return this.argument(name, new PlayerArgument(allowedPlayer), argument -> {
+      argument.executes(executable);
+      builder.accept(argument);
+    });
   }
 
-  public CommandBuilder stringArrayArgument(String name, StringArgumentType argumentType, List<String> keys,
+  public CommandBuilder stringArrayArgument(String name, StringArgumentType argumentType, List<String> suggested,
       ExecutableCommand command, Consumer<ArgumentBuilder<String>> builder) {
     return this.stringArrayArgument(name, argumentType, (context, suggestions) -> {
       String remaining = suggestions.getRemaining();
-      for (String key : keys) {
+      for (String key : suggested) {
         if (key.startsWith(remaining)) {
           suggestions.suggest(key);
         }
