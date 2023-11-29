@@ -80,19 +80,19 @@ public class SyntaxExceptions implements BuiltInExceptionProvider {
     this.readerInvalidEscape = deserializeDynamic(brigadier.READER_INVALID_ESCAPE);
     this.readerInvalidBool = deserializeDynamic(brigadier.READER_INVALID_BOOL);
     this.readerInvalidInt = deserializeDynamic(brigadier.READER_INVALID_INT);
-    this.readerExpectedInt = deserializeStatic(brigadier.READER_EXPECTED_INT); // parsing.int.expected
-    this.readerInvalidLong = deserializeDynamic(brigadier.READER_INVALID_LONG); // parsing.long.invalid
-    this.readerExpectedLong = deserializeStatic(brigadier.READER_EXPECTED_LONG); // parsing.long.expected
-    this.readerInvalidDouble = deserializeDynamic(brigadier.READER_INVALID_DOUBLE); // parsing.double.invalid
-    this.readerExpectedDouble = deserializeStatic(brigadier.READER_EXPECTED_DOUBLE); // parsing.double.expected
-    this.readerInvalidFloat = deserializeDynamic(brigadier.READER_INVALID_FLOAT); // parsing.float.invalid
-    this.readerExpectedFloat = deserializeStatic(brigadier.READER_EXPECTED_FLOAT); // parsing.float.expected
-    this.readerExpectedBool = deserializeStatic(brigadier.READER_EXPECTED_BOOL); // parsing.bool.expected
-    this.readerExpectedSymbol = deserializeDynamic(brigadier.READER_EXPECTED_SYMBOL); // parsing.expected
-    this.dispatcherUnknownCommand = deserializeStatic(brigadier.DISPATCHER_UNKNOWN_COMMAND); // command.unknown.command
-    this.dispatcherUnknownArgument = deserializeStatic(brigadier.DISPATCHER_UNKNOWN_ARGUMENT); // command.unknown.argument
-    this.dispatcherExpectedArgumentSeparator = deserializeStatic(brigadier.DISPATCHER_EXPECTED_ARGUMENT_SEPARATOR); // command.expected.separator
-    this.dispatcherParseException = deserializeDynamic(brigadier.DISPATCHER_PARSE_EXCEPTION); // command.exception
+    this.readerExpectedInt = deserializeStatic(brigadier.READER_EXPECTED_INT);
+    this.readerInvalidLong = deserializeDynamic(brigadier.READER_INVALID_LONG);
+    this.readerExpectedLong = deserializeStatic(brigadier.READER_EXPECTED_LONG);
+    this.readerInvalidDouble = deserializeDynamic(brigadier.READER_INVALID_DOUBLE);
+    this.readerExpectedDouble = deserializeStatic(brigadier.READER_EXPECTED_DOUBLE);
+    this.readerInvalidFloat = deserializeDynamic(brigadier.READER_INVALID_FLOAT);
+    this.readerExpectedFloat = deserializeStatic(brigadier.READER_EXPECTED_FLOAT);
+    this.readerExpectedBool = deserializeStatic(brigadier.READER_EXPECTED_BOOL);
+    this.readerExpectedSymbol = deserializeDynamic(brigadier.READER_EXPECTED_SYMBOL);
+    this.dispatcherUnknownCommand = deserializeStatic(brigadier.DISPATCHER_UNKNOWN_COMMAND);
+    this.dispatcherUnknownArgument = deserializeStatic(brigadier.DISPATCHER_UNKNOWN_ARGUMENT);
+    this.dispatcherExpectedArgumentSeparator = deserializeStatic(brigadier.DISPATCHER_EXPECTED_ARGUMENT_SEPARATOR);
+    this.dispatcherParseException = deserializeDynamic(brigadier.DISPATCHER_PARSE_EXCEPTION);
   }
 
   public static SimpleCommandExceptionType deserializeStatic(String message) {
