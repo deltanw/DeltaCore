@@ -5,6 +5,7 @@ import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
 import com.google.common.collect.Streams;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.List;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import su.deltanw.core.api.Menu;
@@ -18,39 +19,47 @@ public class DevToolCommand extends BrigadierCommand {
   public DevToolCommand() {
     super("devtool");
 
-    // FIXME: permission
-    // this.setPermission("commands.devtool");
-
-    this.executes((context, source) -> {
+    this.executes(context -> {
       // FIXME: help message?
+      return 0;
     });
 
-    this.subcommand("blocks", this::openBlocks, blocks -> { });
-    this.subcommand("items", this::openItems, items -> { });
+    this.subCommand("blocks", blocks -> blocks.executes(this::openBlocks));
+    this.subCommand("items", items -> items.executes(this::openItems));
 
-    this.subcommand("give", (context, source) -> {
-      // FIXME: help message?
-    }, give -> {
-      give.stringArrayArgument("identifier", greedyString(), Streams.concat(
+    this.subCommand("give", give -> {
+      give.executes(context -> {
+        // FIXME: help message
+        return 0;
+      });
+
+      List<String> keys = Streams.concat(
         CustomBlock.getAll().stream().map(CustomBlock::key),
         CustomItem.getAll().stream().map(CustomItem::key)
-      ).map(NamespacedKey::toString).toList(), this::giveItem, identifier -> { });
+      ).map(NamespacedKey::toString).toList();
+
+      give.stringArrayArg("identifier", greedyString(), keys, identifier -> {
+        identifier.executes(this::giveItem);
+      });
     });
   }
 
-  public void openBlocks(CommandContext<CommandSource> context, CommandSource source) throws CommandSyntaxException {
-    this.openMenu(source, new BlocksMenu(source.core(), CustomBlock.getAll(), 0));
+  public int openBlocks(CommandContext<CommandSource> context) throws CommandSyntaxException {
+    return this.openMenu(context.getSource(),
+        new BlocksMenu(context.getSource().core(), CustomBlock.getAll(), 0));
   }
 
-  public void openItems(CommandContext<CommandSource> context, CommandSource source) throws CommandSyntaxException {
-    this.openMenu(source, new ItemsMenu(source.core(), CustomItem.getAll(), 0));
+  public int openItems(CommandContext<CommandSource> context) throws CommandSyntaxException {
+    return this.openMenu(context.getSource(),
+        new ItemsMenu(context.getSource().core(), CustomItem.getAll(), 0));
   }
 
-  public void openMenu(CommandSource source, Menu menu) throws CommandSyntaxException {
+  public int openMenu(CommandSource source, Menu menu) throws CommandSyntaxException {
     source.core().getMenus().openMenu(menu, source.toPlayerOrThrow());
+    return 0;
   }
 
-  public void giveItem(CommandContext<CommandSource> context, CommandSource source) throws CommandSyntaxException {
+  public int giveItem(CommandContext<CommandSource> context) throws CommandSyntaxException {
     ItemStack itemToGive = null;
     NamespacedKey namespacedKey = NamespacedKey.fromString(context.getArgument("identifier", String.class));
 
@@ -67,7 +76,9 @@ public class DevToolCommand extends BrigadierCommand {
     }
 
     if (itemToGive != null) {
-      source.toPlayerOrThrow().getInventory().addItem(itemToGive);
+      context.getSource().toPlayerOrThrow().getInventory().addItem(itemToGive);
     }
+
+    return 0;
   }
 }

@@ -9,7 +9,6 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import java.util.function.Predicate;
 import su.deltanw.core.api.commands.CommandSource;
-import su.deltanw.core.api.commands.ExecutableCommand;
 import su.deltanw.core.api.commands.arguments.CustomArgumentType;
 
 public class ArgumentBuilder<T> extends CommandBuilder {
@@ -26,8 +25,8 @@ public class ArgumentBuilder<T> extends CommandBuilder {
     return new ArgumentBuilder<>(name, type);
   }
 
-  public ArgumentBuilder<T> executes(ExecutableCommand executable) {
-    return (ArgumentBuilder<T>) super.executes(executable);
+  public ArgumentBuilder<T> executes(Command<CommandSource> command) {
+    return (ArgumentBuilder<T>) super.executes(command);
   }
 
   public ArgumentBuilder<T> suggests(SuggestionProvider<CommandSource> provider) {

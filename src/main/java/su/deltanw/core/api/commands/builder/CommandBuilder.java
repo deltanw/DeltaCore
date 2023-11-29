@@ -1,5 +1,6 @@
 package su.deltanw.core.api.commands.builder;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -7,17 +8,13 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import it.unimi.dsi.fastutil.objects.Object2BooleanFunction;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import su.deltanw.core.api.commands.CommandSource;
-import su.deltanw.core.api.commands.ExecutableCommand;
 import su.deltanw.core.api.commands.arguments.PlayerArgument;
 
 public class CommandBuilder extends com.mojang.brigadier.builder.ArgumentBuilder<CommandSource, CommandBuilder> {
@@ -28,38 +25,18 @@ public class CommandBuilder extends com.mojang.brigadier.builder.ArgumentBuilder
     this.name = name;
   }
 
-  public static CommandBuilder of(String literal) {
-    return new CommandBuilder(literal);
+  public static CommandBuilder of(String name) {
+    return new CommandBuilder(name);
   }
 
-  public CommandBuilder executes(ExecutableCommand executable) {
-    return super.executes(executable);
+  public CommandBuilder executes(Command<CommandSource> command) {
+    return super.executes(command);
   }
 
-  public CommandBuilder subcommand(String literal, Consumer<CommandBuilder> builder) {
-    CommandBuilder command = CommandBuilder.of(literal);
+  public CommandBuilder subCommand(String name, Consumer<CommandBuilder> builder) {
+    CommandBuilder command = CommandBuilder.of(name);
     builder.accept(command);
     return this.then(command);
-  }
-
-  public CommandBuilder subcommand(String name, ExecutableCommand command,
-      Consumer<CommandBuilder> builder) {
-    return this.subcommand(name, argument -> {
-      argument.executes(command);
-      builder.accept(argument);
-    });
-  }
-
-  public <T> CommandBuilder argument(String name, ArgumentType<T> argumentType,
-      ExecutableCommand command, Consumer<ArgumentBuilder<T>> builder) {
-    return this.argument(name, argumentType, argument -> {
-      argument.executes(context -> {
-        command.execute(context, context.getSource());
-        return 0;
-      });
-
-      builder.accept(argument);
-    });
   }
 
   public <T> CommandBuilder argument(String name, ArgumentType<T> argumentType,
@@ -69,91 +46,76 @@ public class CommandBuilder extends com.mojang.brigadier.builder.ArgumentBuilder
     return this.then(arg);
   }
 
-  public CommandBuilder stringArgument(String name, StringArgumentType type,
-      ExecutableCommand command, Consumer<ArgumentBuilder<String>> builder) {
-    return this.argument(name, type, command, builder);
+  public CommandBuilder stringArg(String name, StringArgumentType type,
+      Consumer<ArgumentBuilder<String>> builder) {
+    return this.argument(name, type, builder);
   }
 
-  public CommandBuilder booleanArgument(String name,
-      ExecutableCommand command, Consumer<ArgumentBuilder<Boolean>> builder) {
-    return this.argument(name, BoolArgumentType.bool(), command, builder);
+  public CommandBuilder booleanArg(String name,
+      Consumer<ArgumentBuilder<Boolean>> builder) {
+    return this.argument(name, BoolArgumentType.bool(), builder);
   }
 
-  public CommandBuilder integerArgument(String name, IntegerArgumentType type,
-      ExecutableCommand command, Consumer<ArgumentBuilder<Integer>> builder) {
-    return this.argument(name, type, command, builder);
+  public CommandBuilder intArg(String name, IntegerArgumentType type,
+      Consumer<ArgumentBuilder<Integer>> builder) {
+    return this.argument(name, type, builder);
   }
 
-  public CommandBuilder integerArgument(String name,
-      ExecutableCommand command, Consumer<ArgumentBuilder<Integer>> builder) {
-    return this.argument(name, IntegerArgumentType.integer(), command, builder);
+  public CommandBuilder intArg(String name,
+      Consumer<ArgumentBuilder<Integer>> builder) {
+    return this.argument(name, IntegerArgumentType.integer(), builder);
   }
 
-  public CommandBuilder floatArgument(String name, FloatArgumentType type,
-      ExecutableCommand command, Consumer<ArgumentBuilder<Float>> builder) {
-    return this.argument(name, type, command, builder);
+  public CommandBuilder floatArg(String name, FloatArgumentType type,
+      Consumer<ArgumentBuilder<Float>> builder) {
+    return this.argument(name, type, builder);
   }
 
-  public CommandBuilder floatArgument(String name,
-      ExecutableCommand command, Consumer<ArgumentBuilder<Float>> builder) {
-    return this.argument(name, FloatArgumentType.floatArg(), command, builder);
+  public CommandBuilder floatArg(String name,
+      Consumer<ArgumentBuilder<Float>> builder) {
+    return this.argument(name, FloatArgumentType.floatArg(), builder);
   }
 
-  public CommandBuilder doubleArgument(String name, DoubleArgumentType type,
-      ExecutableCommand command, Consumer<ArgumentBuilder<Double>> builder) {
-    return this.argument(name, type, command, builder);
+  public CommandBuilder doubleArg(String name, DoubleArgumentType type,
+      Consumer<ArgumentBuilder<Double>> builder) {
+    return this.argument(name, type, builder);
   }
 
-  public CommandBuilder doubleArgument(String name,
-      ExecutableCommand command, Consumer<ArgumentBuilder<Double>> builder) {
-    return this.argument(name, DoubleArgumentType.doubleArg(), command, builder);
+  public CommandBuilder doubleArg(String name,
+      Consumer<ArgumentBuilder<Double>> builder) {
+    return this.argument(name, DoubleArgumentType.doubleArg(), builder);
   }
 
-  public CommandBuilder longArgument(String name, LongArgumentType type,
-      ExecutableCommand command, Consumer<ArgumentBuilder<Long>> builder) {
-    return this.argument(name, type, command, builder);
+  public CommandBuilder longArg(String name, LongArgumentType type,
+      Consumer<ArgumentBuilder<Long>> builder) {
+    return this.argument(name, type, builder);
   }
 
-  public CommandBuilder longArgument(String name,
-      ExecutableCommand command, Consumer<ArgumentBuilder<Long>> builder) {
-    return this.argument(name, LongArgumentType.longArg(), command, builder);
+  public CommandBuilder longArg(String name,
+      Consumer<ArgumentBuilder<Long>> builder) {
+    return this.argument(name, LongArgumentType.longArg(), builder);
   }
 
-  public CommandBuilder playerArgument(String name, Object2BooleanFunction<Player> allowedPlayer,
-      ExecutableCommand executable, Consumer<ArgumentBuilder<Player>> builder) {
-    return this.argument(name, new PlayerArgument(allowedPlayer), argument -> {
-      argument.executes(executable);
-      builder.accept(argument);
-    });
+  public CommandBuilder playerArg(String name, Object2BooleanFunction<Player> allowedPlayer,
+      Consumer<ArgumentBuilder<Player>> builder) {
+    return this.argument(name, PlayerArgument.player(allowedPlayer), builder);
   }
 
-  public CommandBuilder stringArrayArgument(String name, StringArgumentType argumentType, List<String> suggested,
-      ExecutableCommand command, Consumer<ArgumentBuilder<String>> builder) {
-    return this.stringArrayArgument(name, argumentType, (context, suggestions) -> {
-      String remaining = suggestions.getRemaining();
-      for (String key : suggested) {
-        if (key.startsWith(remaining)) {
-          suggestions.suggest(key);
+  public CommandBuilder stringArrayArg(String name, StringArgumentType argumentType,
+      List<String> suggested, Consumer<ArgumentBuilder<String>> builder) {
+    return this.argument(name, argumentType, arg -> {
+      arg.suggests((context, suggestions) -> {
+        String remaining = suggestions.getRemaining();
+        for (String key : suggested) {
+          if (key.startsWith(remaining)) {
+            suggestions.suggest(key);
+          }
         }
-      }
-    }, command, builder);
-  }
 
-  public CommandBuilder stringArrayArgument(String name, StringArgumentType argumentType,
-      BiConsumer<CommandContext<CommandSource>, SuggestionsBuilder> suggests,
-      ExecutableCommand command, Consumer<ArgumentBuilder<String>> builder) {
-    return this.argument(name, argumentType, argument -> {
-      argument.suggests((context, suggestions) -> {
-        suggests.accept(context, suggestions);
         return suggestions.buildFuture();
       });
 
-      argument.executes(context -> {
-        command.execute(context, context.getSource());
-        return 0;
-      });
-
-      builder.accept(argument);
+      builder.accept(arg);
     });
   }
 

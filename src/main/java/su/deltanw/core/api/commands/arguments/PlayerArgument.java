@@ -14,10 +14,20 @@ import su.deltanw.core.impl.commands.CommandExceptions;
 
 public class PlayerArgument implements CustomArgumentType<Player, String> {
 
+  private static final PlayerArgument PLAYER = new PlayerArgument(player -> true);
+
   private Object2BooleanFunction<Player> allowedPlayer;
 
-  public PlayerArgument(Object2BooleanFunction<Player> allowedPlayer) {
+  protected PlayerArgument(Object2BooleanFunction<Player> allowedPlayer) {
     this.allowedPlayer = allowedPlayer;
+  }
+
+  public static PlayerArgument player() {
+    return PLAYER;
+  }
+
+  public static PlayerArgument player(Object2BooleanFunction<Player> allowedPlayer) {
+    return new PlayerArgument(allowedPlayer);
   }
 
   @Override
