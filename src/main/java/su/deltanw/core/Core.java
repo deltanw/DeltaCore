@@ -140,12 +140,12 @@ public final class Core extends JavaPlugin implements Listener {
     ItemsConfig.INSTANCE.reload(new File(getDataFolder(), "items.yml"));
 
     File messagesConfig = new File(getDataFolder(), "messages.yml");
-    MessagesConfig.INSTANCE.reload(messagesConfig, MessagesConfig.INSTANCE.PREFIX); // Load prefix
+    MessagesConfig.INSTANCE.load(messagesConfig, MessagesConfig.INSTANCE.PREFIX); // Load prefix
     MessagesConfig.INSTANCE.reload(messagesConfig, MessagesConfig.INSTANCE.PREFIX); // Use prefix
 
     ComponentSerializer<Component, Component, String> serializer = MessagesConfig.INSTANCE.SERIALIZER.getSerializer();
     if (serializer == null) {
-      getLogger().warning("The specified serializer could not be founded, using default. (LEGACY_AMPERSAND)");
+      getLogger().warning("The specified serializer could not be found, using default. (LEGACY_AMPERSAND)");
       setSerializer(new Serializer(Objects.requireNonNull(Serializers.LEGACY_AMPERSAND.getSerializer())));
     } else {
       setSerializer(new Serializer(serializer));

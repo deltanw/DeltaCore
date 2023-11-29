@@ -3,6 +3,7 @@ package su.deltanw.core.config;
 import net.elytrium.commons.config.YamlConfig;
 import net.elytrium.commons.kyori.serialization.Serializers;
 
+// TODO: serializer shouldn't serialize placeholders
 public class MessagesConfig extends YamlConfig {
 
   @Ignore
@@ -20,9 +21,9 @@ public class MessagesConfig extends YamlConfig {
   public String PREFIX = "DeltaNetwork &6>>&f";
 
   @Create
-  public Brigadier BRIGADIER;
+  public Main MAIN;
 
-  public static class Brigadier {
+  public static class Main {
 
     public String PLAYERS_ONLY = "{PRFX} Только игроки могут использовать эту команду.";
     @Placeholders("{NICKNAME}")
@@ -32,7 +33,13 @@ public class MessagesConfig extends YamlConfig {
     @Placeholders("{PART}")
     public String COMMAND_INCORRECT_PART = "&c&n{PART}";
 
+    public String DEVTOOL_HELP_MESSAGE = "{PRFX} Подсказка: используй tab-complete.";
+    public String DEVTOOL_GIVE_HELP_MESSAGE = "{PRFX} Надо указать идентификатор. Исправся.";
+    @Placeholders("{IDENTIFIER}")
+    public String DEVTOOL_GIVE_NOT_FOUND = "{PRFX} Блок/предмет '{IDENTIFIER}' не найден.";
+
     // Mojang translation begin here \/
+    @Comment("Mojang translation begin here")
     @Placeholders({"{MIN}", "{CURRENT}"})
     public String DOUBLE_TOO_LOW = "{PRFX} Вещественное число двойной точности должно быть не меньше {MIN}; обнаружено {CURRENT}";
     @Placeholders({"{MAX}", "{CURRENT}"})

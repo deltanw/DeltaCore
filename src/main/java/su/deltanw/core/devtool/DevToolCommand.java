@@ -6,9 +6,12 @@ import com.google.common.collect.Streams;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.List;
+import net.elytrium.commons.config.Placeholders;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
+import su.deltanw.core.Core;
 import su.deltanw.core.api.Menu;
+import su.deltanw.core.config.MessagesConfig;
 import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.commands.CommandSource;
@@ -20,7 +23,8 @@ public class DevToolCommand extends BrigadierCommand {
     super("devtool");
 
     this.executes(context -> {
-      // FIXME: help message?
+      context.getSource().sendMessage(Core.getSerializer().deserialize(
+          MessagesConfig.INSTANCE.MAIN.DEVTOOL_HELP_MESSAGE));
       return 0;
     });
 
@@ -29,7 +33,8 @@ public class DevToolCommand extends BrigadierCommand {
 
     this.subCommand("give", give -> {
       give.executes(context -> {
-        // FIXME: help message
+        context.getSource().sendMessage(Core.getSerializer().deserialize(
+            MessagesConfig.INSTANCE.MAIN.DEVTOOL_GIVE_HELP_MESSAGE));
         return 0;
       });
 
@@ -61,7 +66,8 @@ public class DevToolCommand extends BrigadierCommand {
 
   public int giveItem(CommandContext<CommandSource> context) throws CommandSyntaxException {
     ItemStack itemToGive = null;
-    NamespacedKey namespacedKey = NamespacedKey.fromString(context.getArgument("identifier", String.class));
+    String identifier = context.getArgument("identifier", String.class);
+    NamespacedKey namespacedKey = NamespacedKey.fromString(identifier);
 
     CustomBlock customBlock = CustomBlock.get(namespacedKey);
     if (customBlock != null) {
@@ -77,6 +83,9 @@ public class DevToolCommand extends BrigadierCommand {
 
     if (itemToGive != null) {
       context.getSource().toPlayerOrThrow().getInventory().addItem(itemToGive);
+    } else {
+      context.getSource().sendMessage(Core.getSerializer().deserialize(
+          Placeholders.replace(MessagesConfig.INSTANCE.MAIN.DEVTOOL_GIVE_NOT_FOUND, identifier)));
     }
 
     return 0;

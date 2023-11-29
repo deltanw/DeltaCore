@@ -53,11 +53,11 @@ public record CommandSource(Core core, CommandSender sender) {
         argument = "..." + argument;
       }
 
-      argument += Placeholders.replace(MessagesConfig.INSTANCE.BRIGADIER.COMMAND_INCORRECT_PART,
+      argument += Placeholders.replace(MessagesConfig.INSTANCE.MAIN.COMMAND_INCORRECT_PART,
           exception.getInput().substring(cursor));
 
       component = component.append(Core.getSerializer().deserialize(
-          Placeholders.replace(MessagesConfig.INSTANCE.BRIGADIER.COMMAND_SYNTAX, argument)));
+          Placeholders.replace(MessagesConfig.INSTANCE.MAIN.COMMAND_SYNTAX, argument)));
     }
 
     this.sendMessage(component);

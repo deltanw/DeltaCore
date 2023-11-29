@@ -11,7 +11,7 @@ import net.kyori.adventure.text.Component;
 import su.deltanw.core.Core;
 import su.deltanw.core.api.commands.CommandException;
 import su.deltanw.core.config.MessagesConfig;
-import su.deltanw.core.config.MessagesConfig.Brigadier;
+import su.deltanw.core.config.MessagesConfig.Main;
 
 public class CommandExceptions implements BuiltInExceptionProvider {
 
@@ -53,7 +53,7 @@ public class CommandExceptions implements BuiltInExceptionProvider {
 
   public void reload() {
     MessagesConfig messages = MessagesConfig.INSTANCE;
-    Brigadier brigadier = messages.BRIGADIER;
+    Main brigadier = messages.MAIN;
 
     this.playersOnly = deserializeStatic(brigadier.PLAYERS_ONLY);
     this.playerNotFound = deserializeDynamic(brigadier.PLAYER_NOT_FOUND);
