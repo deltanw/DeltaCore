@@ -19,8 +19,17 @@ public record CommandSource(Core core, CommandSender sender) {
     this.sendMessage(PaperAdventure.asAdventure(component));
   }
 
-  public Player asPlayer() throws SyntaxException {
+  public Player toPlayer() {
     if (this.sender instanceof Player player) {
+      return player;
+    }
+
+    return null;
+  }
+
+  public Player toPlayerOrThrow() throws SyntaxException {
+    Player player = this.toPlayer();
+    if (player != null) {
       return player;
     }
 

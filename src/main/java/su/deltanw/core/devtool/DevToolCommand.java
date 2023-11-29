@@ -47,7 +47,7 @@ public class DevToolCommand extends BrigadierCommand {
   }
 
   public void openMenu(CommandSource source, Menu menu) throws SyntaxException {
-    source.core().getMenus().openMenu(menu, source.asPlayer());
+    source.core().getMenus().openMenu(menu, source.toPlayerOrThrow());
   }
 
   public void giveItem(CommandContext<CommandSource> context, CommandSource source, String argument) throws SyntaxException {
@@ -67,7 +67,7 @@ public class DevToolCommand extends BrigadierCommand {
     }
 
     if (itemToGive != null) {
-      source.asPlayer().getInventory().addItem(itemToGive);
+      source.toPlayerOrThrow().getInventory().addItem(itemToGive);
     }
   }
 }
