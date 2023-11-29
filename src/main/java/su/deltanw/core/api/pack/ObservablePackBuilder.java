@@ -2,7 +2,7 @@ package su.deltanw.core.api.pack;
 
 import java.util.Collection;
 
-public interface ObservablePackBuilder<T extends ObservablePackBuilder<?>> extends PackBuilder<T> {
+public interface ObservablePackBuilder<T extends ObservablePackBuilder<T>> extends PackBuilder<T> {
 
   void addObserver(PackObserver observer);
 
