@@ -4,7 +4,6 @@ import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
 
 import com.google.common.collect.Streams;
 import com.mojang.brigadier.context.CommandContext;
-import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import su.deltanw.core.api.Menu;
@@ -26,13 +25,17 @@ public class DevToolCommand extends BrigadierCommand {
       // FIXME: help message?
     });
 
-    this.voidArgument("blocks", this::openBlocks, blocks -> { });
-    this.voidArgument("items", this::openItems, items -> { });
+    this.subcommand("blocks", this::openBlocks, blocks -> { });
+    this.subcommand("items", this::openItems, items -> { });
 
-    this.stringArrayArgument("give", greedyString(), Streams.concat(
+    this.subcommand("give", (context, source) -> {
+      // FIXME: help message?
+    }, give -> {
+      give.stringArrayArgument("identifier", greedyString(), Streams.concat(
         CustomBlock.getAll().stream().map(CustomBlock::key),
         CustomItem.getAll().stream().map(CustomItem::key)
-    ).map(NamespacedKey::toString).toList(), this::giveItem, give -> { });
+      ).map(NamespacedKey::toString).toList(), this::giveItem, identifier -> { });
+    });
   }
 
   public void openBlocks(CommandContext<CommandSource> context, CommandSource source) throws SyntaxException {
@@ -48,11 +51,6 @@ public class DevToolCommand extends BrigadierCommand {
   }
 
   public void giveItem(CommandContext<CommandSource> context, CommandSource source, String argument) throws SyntaxException {
-    if (argument == null) {
-      source.sendMessage(Component.text("Использование: /devtool give <ключ>"));
-      return;
-    }
-
     ItemStack itemToGive = null;
     NamespacedKey namespacedKey = NamespacedKey.fromString(argument);
 
@@ -69,7 +67,7 @@ public class DevToolCommand extends BrigadierCommand {
     }
 
     if (itemToGive != null) {
-      context.getSource().asPlayer().getInventory().addItem(itemToGive);
+      source.asPlayer().getInventory().addItem(itemToGive);
     }
   }
 }
