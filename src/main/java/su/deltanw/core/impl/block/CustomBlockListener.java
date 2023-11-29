@@ -50,7 +50,7 @@ public class CustomBlockListener implements Listener {
 
     event.getPlayer().swingHand(event.getHand());
     CustomBlockData blockData = new CustomBlockData(event.getBlockPlaced(), plugin);
-    blockData.set(Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_block")), PersistentDataType.STRING, key);
+    blockData.set(CustomBlock.BLOCK_PDC_KEY, PersistentDataType.STRING, key);
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

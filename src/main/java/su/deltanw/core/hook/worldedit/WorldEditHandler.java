@@ -22,9 +22,9 @@ import org.jetbrains.annotations.Nullable;
 import su.deltanw.core.Core;
 import su.deltanw.core.impl.block.CustomBlock;
 
-import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Consumer;
 
 public class WorldEditHandler {
 
@@ -53,7 +53,7 @@ public class WorldEditHandler {
       private CustomBlock getCustomBlock(int x, int y, int z) {
         Block block = world.getBlockAt(x, y, z);
         CustomBlockData blockData = new CustomBlockData(block, plugin);
-        String key = blockData.get(Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_block")), PersistentDataType.STRING);
+        String key = blockData.get(CustomBlock.BLOCK_PDC_KEY, PersistentDataType.STRING);
         if (key != null) {
           NamespacedKey namespacedKey = NamespacedKey.fromString(key);
           return CustomBlock.get(namespacedKey);
@@ -121,18 +121,28 @@ public class WorldEditHandler {
         return this.setBlock(location.getX(), location.getY(), location.getZ(), block);
       }
 
-      private void processRemoveQueue() {
-        Location location;
-        while ((location = removeBlockQueue.poll()) != null) {
-          new CustomBlockData(location.getBlock(), plugin).remove(Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_block")));
+      private <T> void processQueue(Queue<T> queue, Consumer<T> consumer) {
+        for (int i = 0; i < 16 /* TODO: Make this value configurable? */; i++) {
+          T value = queue.poll();
+          if (value == null) {
+            return;
+          }
+
+          consumer.accept(value);
+        }
+
+        if (!queue.isEmpty()) {
+          Bukkit.getScheduler().runTask(plugin, () -> processQueue(queue, consumer));
         }
       }
 
+      private void processRemoveQueue() {
+        processQueue(removeBlockQueue, location ->
+          new CustomBlockData(location.getBlock(), plugin).remove(CustomBlock.BLOCK_PDC_KEY));
+      }
+
       private void processCustomBlockQueue() {
-        Pair<Location, CustomBlock> blockData;
-        while ((blockData = customBlockQueue.poll()) != null) {
-          blockData.right().place(plugin, blockData.left());
-        }
+        processQueue(customBlockQueue, blockData -> blockData.right().place(plugin, blockData.left()));
       }
 
       @Nullable

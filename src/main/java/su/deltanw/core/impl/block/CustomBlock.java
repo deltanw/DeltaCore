@@ -33,6 +33,8 @@ public record CustomBlock(NamespacedKey key, BlockState serversideBlock, BlockSt
   private static final Map<NamespacedKey, CustomBlock> CUSTOM_BLOCK_REGISTRY = new HashMap<>();
   private static final Map<String, CustomBlock> CUSTOM_BLOCK_BY_STATE = new HashMap<>();
 
+  public static NamespacedKey BLOCK_PDC_KEY = Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_block"));
+  
   private static final HolderLookup.Provider HOLDER_LOOKUP_PROVIDER = VanillaRegistries.createLookup();
   private static final HolderLookup<Block> BLOCK_HOLDER_LOOKUP = HOLDER_LOOKUP_PROVIDER.lookup(Registries.BLOCK).orElseThrow();
   private static final HolderLookup<Item> ITEM_HOLDER_LOOKUP = HOLDER_LOOKUP_PROVIDER.lookup(Registries.ITEM).orElseThrow();
@@ -77,7 +79,7 @@ public record CustomBlock(NamespacedKey key, BlockState serversideBlock, BlockSt
   public void place(Plugin plugin, Location location) {
     ServerLevel level = ((CraftWorld) location.getWorld()).getHandle();
     CustomBlockData blockData = new CustomBlockData(location.getBlock(), plugin);
-    blockData.set(Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_block")), PersistentDataType.STRING, key.asString());
+    blockData.set(BLOCK_PDC_KEY, PersistentDataType.STRING, key.asString());
     level.setBlock(new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()), serversideBlock, 0 /* FLAGS????? */);
   }
 }

@@ -34,7 +34,6 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 public class CustomBlockNettyHandler extends ChannelDuplexHandler {
@@ -93,7 +92,7 @@ public class CustomBlockNettyHandler extends ChannelDuplexHandler {
 
   private CustomBlock getCustomBlock(Block block) {
     CustomBlockData blockData = new CustomBlockData(block, plugin);
-    String key = blockData.get(Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_block")), PersistentDataType.STRING);
+    String key = blockData.get(CustomBlock.BLOCK_PDC_KEY, PersistentDataType.STRING);
     if (key != null) {
       NamespacedKey namespacedKey = NamespacedKey.fromString(key);
       return CustomBlock.get(namespacedKey);
