@@ -1,4 +1,4 @@
 package su.deltanw.core.api.pack;
 
-public class ResourcePack {
+public record ResourcePack(byte[] data) {
 }
