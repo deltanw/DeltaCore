@@ -4,6 +4,10 @@ import java.util.UUID;
 
 import com.jeff_media.customblockdata.CustomBlockData;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.elytrium.commons.config.YamlConfig.LoadResult;
+import net.elytrium.commons.kyori.serialization.Serializer;
+import net.elytrium.commons.kyori.serialization.Serializers;
+import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
@@ -18,6 +22,7 @@ import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.config.BlocksConfig;
 import su.deltanw.core.config.ItemsConfig;
+import su.deltanw.core.config.MessagesConfig;
 import su.deltanw.core.devtool.DevToolCommand;
 import su.deltanw.core.hook.worldedit.WorldEditHook;
 import su.deltanw.core.impl.ComponentFactoryImpl;
@@ -61,6 +66,8 @@ public final class Core extends JavaPlugin implements Listener {
       0x0A08, 0x0A09, 0x0A0A, 0x0A0F, 0x0A10, 0x0A13, 0x0A14, 0x0A15, 0x0A16, 0x0A17, 0x0A18, 0x0A19, 0x0A1A, 0x0A1B, 0x0A1C, 0x0A1D, 0x0A1E, 0x0A1F, 0x0A20
   };
 
+  private static Serializer SERIALIZER;
+
   private final Map<String, TextComponent> prefixes = new HashMap<>();
 
   private CommandManager commandManager;
@@ -74,6 +81,14 @@ public final class Core extends JavaPlugin implements Listener {
   private Component errorComponent;
 
   private LuckPerms luckPerms;
+
+  public static void setSerializer(Serializer serializer) {
+    SERIALIZER = serializer;
+  }
+
+  public static Serializer getSerializer() {
+    return SERIALIZER;
+  }
 
   private Map<String, TextComponent> listComponents(File directory) {
     Map<String, TextComponent> componentMap = new HashMap<>();
@@ -123,6 +138,18 @@ public final class Core extends JavaPlugin implements Listener {
   public void onEnable() {
     BlocksConfig.INSTANCE.reload(new File(getDataFolder(), "blocks.yml"));
     ItemsConfig.INSTANCE.reload(new File(getDataFolder(), "items.yml"));
+
+    File messagesConfig = new File(getDataFolder(), "messages.yml");
+    MessagesConfig.INSTANCE.reload(messagesConfig, MessagesConfig.INSTANCE.PREFIX); // Load prefix
+    MessagesConfig.INSTANCE.reload(messagesConfig, MessagesConfig.INSTANCE.PREFIX); // Use prefix
+
+    ComponentSerializer<Component, Component, String> serializer = MessagesConfig.INSTANCE.SERIALIZER.getSerializer();
+    if (serializer == null) {
+      getLogger().warning("The specified serializer could not be founded, using default. (LEGACY_AMPERSAND)");
+      setSerializer(new Serializer(Objects.requireNonNull(Serializers.LEGACY_AMPERSAND.getSerializer())));
+    } else {
+      setSerializer(new Serializer(serializer));
+    }
 
     this.luckPerms = LuckPermsProvider.get();
 

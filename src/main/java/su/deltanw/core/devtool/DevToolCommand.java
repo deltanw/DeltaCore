@@ -4,13 +4,13 @@ import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
 
 import com.google.common.collect.Streams;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import su.deltanw.core.api.Menu;
 import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.commands.CommandSource;
-import su.deltanw.core.api.commands.SyntaxException;
 import su.deltanw.core.impl.item.CustomItem;
 
 public class DevToolCommand extends BrigadierCommand {
@@ -38,19 +38,19 @@ public class DevToolCommand extends BrigadierCommand {
     });
   }
 
-  public void openBlocks(CommandContext<CommandSource> context, CommandSource source) throws SyntaxException {
+  public void openBlocks(CommandContext<CommandSource> context, CommandSource source) throws CommandSyntaxException {
     this.openMenu(source, new BlocksMenu(source.core(), CustomBlock.getAll(), 0));
   }
 
-  public void openItems(CommandContext<CommandSource> context, CommandSource source) throws SyntaxException {
+  public void openItems(CommandContext<CommandSource> context, CommandSource source) throws CommandSyntaxException {
     this.openMenu(source, new ItemsMenu(source.core(), CustomItem.getAll(), 0));
   }
 
-  public void openMenu(CommandSource source, Menu menu) throws SyntaxException {
+  public void openMenu(CommandSource source, Menu menu) throws CommandSyntaxException {
     source.core().getMenus().openMenu(menu, source.toPlayerOrThrow());
   }
 
-  public void giveItem(CommandContext<CommandSource> context, CommandSource source, String argument) throws SyntaxException {
+  public void giveItem(CommandContext<CommandSource> context, CommandSource source, String argument) throws CommandSyntaxException {
     ItemStack itemToGive = null;
     NamespacedKey namespacedKey = NamespacedKey.fromString(argument);
 

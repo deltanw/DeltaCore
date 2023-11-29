@@ -16,6 +16,11 @@ public class SyntaxException extends CommandSyntaxException {
     this.component = component;
   }
 
+  public SyntaxException(Component component, String input, int cursor) {
+    super(EMPTY_TYPE, EMPTY_MESSAGE, input, cursor);
+    this.component = component;
+  }
+
   public Component getComponent() {
     return this.component;
   }

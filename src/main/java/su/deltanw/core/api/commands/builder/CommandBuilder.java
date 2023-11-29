@@ -15,13 +15,12 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import su.deltanw.core.api.commands.CommandSource;
 import su.deltanw.core.api.commands.ExecutableArgument;
 import su.deltanw.core.api.commands.ExecutableCommand;
-import su.deltanw.core.api.commands.SyntaxException;
+import su.deltanw.core.impl.commands.SyntaxExceptions;
 
 public class CommandBuilder extends com.mojang.brigadier.builder.ArgumentBuilder<CommandSource, CommandBuilder> {
   private String name;
@@ -142,7 +141,7 @@ public class CommandBuilder extends com.mojang.brigadier.builder.ArgumentBuilder
       } else {
         Player player = Bukkit.getPlayerExact(playerName);
         if (player == null) {
-          throw new SyntaxException(Component.text("Игрок '" + playerName + "' не найден."));
+          throw SyntaxExceptions.INSTANCE.playerNotFound.create(playerName);
         }
 
         executable.execute(context, source, player);
