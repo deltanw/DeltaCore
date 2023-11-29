@@ -45,34 +45,42 @@ public class BrigadierConsoleHighlighter implements Highlighter {
   public AttributedString highlight(LineReader reader, String buffer) {
     // Paper command highlighter, but with a custom CommandDispatcher
     AttributedStringBuilder builder = new AttributedStringBuilder();
-    ParseResults<CommandSource> results = this.core.getCommandManager().getDispatcher().parse(
-        this.core.getCommandManager().prepareReader(buffer), new CommandSource(this.core, Bukkit.getConsoleSender()));
     int pos = 0;
-    if (buffer.startsWith("/")) {
-      builder.append("/", AttributedStyle.DEFAULT);
-      pos = 1;
-    }
-
-    int component = -1;
-    for (ParsedCommandNode<CommandSource> node : results.getContext().getLastChild().getNodes()) {
-      if (node.getRange().getStart() >= buffer.length()) {
-        break;
+    try {
+      ParseResults<CommandSource> results = this.core.getCommandManager().getDispatcher().parse(
+          this.core.getCommandManager().prepareReader(buffer), new CommandSource(this.core, Bukkit.getConsoleSender()));
+      if (buffer.startsWith("/")) {
+        builder.append("/", AttributedStyle.DEFAULT);
+        pos = 1;
       }
 
-      int start = node.getRange().getStart();
-      int end = Math.min(node.getRange().getEnd(), buffer.length());
-
-      builder.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
-      if (node.getNode() instanceof LiteralCommandNode) {
-        builder.append(buffer.substring(start, end), AttributedStyle.DEFAULT);
-      } else {
-        if (++component >= COLORS.length) {
-          component = 0;
+      int component = -1;
+      for (ParsedCommandNode<CommandSource> node : results.getContext().getLastChild().getNodes()) {
+        if (node.getRange().getStart() >= buffer.length()) {
+          break;
         }
-        builder.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(COLORS[component]));
-      }
 
-      pos = end;
+        int start = node.getRange().getStart();
+        int end = Math.min(node.getRange().getEnd(), buffer.length());
+
+        builder.append(buffer.substring(pos, start), AttributedStyle.DEFAULT);
+        if (node.getNode() instanceof LiteralCommandNode) {
+          builder.append(buffer.substring(start, end), AttributedStyle.DEFAULT);
+        } else {
+          if (++component >= COLORS.length) {
+            component = 0;
+          }
+          builder.append(buffer.substring(start, end), AttributedStyle.DEFAULT.foreground(COLORS[component]));
+        }
+
+        pos = end;
+      }
+    } catch (Throwable throwable) {
+      throwable.printStackTrace();
+
+      if (this.previous != null) {
+        return this.previous.highlight(reader, buffer);
+      }
     }
 
     if (pos < buffer.length()) {
