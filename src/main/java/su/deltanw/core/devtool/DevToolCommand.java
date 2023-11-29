@@ -50,9 +50,9 @@ public class DevToolCommand extends BrigadierCommand {
     source.core().getMenus().openMenu(menu, source.toPlayerOrThrow());
   }
 
-  public void giveItem(CommandContext<CommandSource> context, CommandSource source, String argument) throws CommandSyntaxException {
+  public void giveItem(CommandContext<CommandSource> context, CommandSource source) throws CommandSyntaxException {
     ItemStack itemToGive = null;
-    NamespacedKey namespacedKey = NamespacedKey.fromString(argument);
+    NamespacedKey namespacedKey = NamespacedKey.fromString(context.getArgument("identifier", String.class));
 
     CustomBlock customBlock = CustomBlock.get(namespacedKey);
     if (customBlock != null) {
