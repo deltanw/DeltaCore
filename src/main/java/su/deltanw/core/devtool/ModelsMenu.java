@@ -11,11 +11,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import su.deltanw.core.Core;
 import su.deltanw.core.api.Menu;
-import su.deltanw.core.impl.item.CustomItem;
+import su.deltanw.core.impl.model.CustomModel;
 
 import java.util.List;
 
-public class ItemsMenu implements Menu {
+public class ModelsMenu implements Menu {
 
   private static final ItemStack PREV;
   private static final ItemStack NEXT;
@@ -47,23 +47,23 @@ public class ItemsMenu implements Menu {
   }
 
   private final Core core;
-  private final List<CustomItem> items;
+  private final List<CustomModel> models;
   private int page;
 
-  public ItemsMenu(Core core, List<CustomItem> items, int page) {
+  public ModelsMenu(Core core, List<CustomModel> models, int page) {
     this.core = core;
-    this.items = items;
+    this.models = models;
     this.page = page;
   }
 
-  public ItemsMenu(Core core, List<CustomItem> items) {
-    this(core, items, 0);
+  public ModelsMenu(Core core, List<CustomModel> models) {
+    this(core, models, 0);
   }
 
   @Override
   public Inventory createInventory(Player player) {
     Inventory inventory = Bukkit.createInventory(player, 54,
-        Component.text(INVENTORY_START + "갗").color(NamedTextColor.WHITE).color(NamedTextColor.WHITE));
+        Component.text(INVENTORY_START + "같").color(NamedTextColor.WHITE).color(NamedTextColor.WHITE));
 
     ItemStack[] contents = new ItemStack[]{
         null, null, null, null, null, null, null, null, null,
@@ -74,9 +74,9 @@ public class ItemsMenu implements Menu {
         PREV, PREV, null, null, null, null, null, NEXT, NEXT,
     };
 
-    items.stream()
+    models.stream()
         .skip(page * 45L).limit(45)
-        .map(CustomItem::item)
+        .map(CustomModel::item)
         .toList().toArray(contents);
 
     inventory.setContents(contents);
@@ -87,16 +87,16 @@ public class ItemsMenu implements Menu {
   public void onClick(int slot, Player player) {
     if (slot >= 0 && slot < 45) {
       int index = page * 45 + slot;
-      if (index >= items.size()) {
+      if (index >= models.size()) {
         return;
       }
 
-      CustomItem item = items.get(index);
-      if (item == null) {
+      CustomModel model = models.get(index);
+      if (model == null) {
         return;
       }
 
-      player.getInventory().addItem(item.item());
+      player.getInventory().addItem(model.item());
     } else if (slot == 45 || slot == 46) {
       if (page == 0) {
         return;
@@ -105,7 +105,7 @@ public class ItemsMenu implements Menu {
       --page;
       core.getMenus().openMenu(this, player);
     } else if (slot == 52 || slot == 53) {
-      if ((page + 1) * 45 >= items.size()) {
+      if ((page + 1) * 45 >= models.size()) {
         return;
       }
 

@@ -16,6 +16,7 @@ import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.commands.CommandSource;
 import su.deltanw.core.impl.item.CustomItem;
+import su.deltanw.core.impl.model.CustomModel;
 
 public class DevToolCommand extends BrigadierCommand {
 
@@ -30,6 +31,7 @@ public class DevToolCommand extends BrigadierCommand {
 
     this.subCommand("blocks", blocks -> blocks.executes(this::openBlocks));
     this.subCommand("items", items -> items.executes(this::openItems));
+    this.subCommand("models", models -> models.executes(this::openModels));
 
     this.subCommand("give", give -> {
       give.executes(context -> {
@@ -40,6 +42,7 @@ public class DevToolCommand extends BrigadierCommand {
 
       List<String> keys = Streams.concat(
         CustomBlock.getAll().stream().map(CustomBlock::key),
+        CustomModel.getAll().stream().map(CustomModel::key),
         CustomItem.getAll().stream().map(CustomItem::key)
       ).map(NamespacedKey::toString).toList();
 
@@ -59,6 +62,11 @@ public class DevToolCommand extends BrigadierCommand {
         new ItemsMenu(context.getSource().core(), CustomItem.getAll(), 0));
   }
 
+  public int openModels(CommandContext<CommandSource> context) throws CommandSyntaxException {
+    return this.openMenu(context.getSource(),
+        new ModelsMenu(context.getSource().core(), CustomModel.getAll(), 0));
+  }
+
   public int openMenu(CommandSource source, Menu menu) throws CommandSyntaxException {
     source.core().getMenus().openMenu(menu, source.toPlayerOrThrow());
     return 0;
@@ -72,6 +80,13 @@ public class DevToolCommand extends BrigadierCommand {
     CustomBlock customBlock = CustomBlock.get(namespacedKey);
     if (customBlock != null) {
       itemToGive = customBlock.item();
+    }
+
+    if (itemToGive == null) {
+      CustomModel customModel = CustomModel.get(namespacedKey);
+      if (customModel != null) {
+        itemToGive = customModel.item();
+      }
     }
 
     if (itemToGive == null) {
