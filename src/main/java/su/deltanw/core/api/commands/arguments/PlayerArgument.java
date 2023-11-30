@@ -15,16 +15,12 @@ import su.deltanw.core.impl.commands.CommandExceptions;
 
 public class PlayerArgument implements CustomArgumentType<Player, String> {
 
-  private static final PlayerArgument PLAYER = new PlayerArgument((context, player) -> true);
+  public static final PlayerArgument EVERYONE = new PlayerArgument((context, player) -> true);
 
   private BiFunction<CommandSource, Player, Boolean> allowedPlayer;
 
   protected PlayerArgument(BiFunction<CommandSource, Player, Boolean> allowedPlayer) {
     this.allowedPlayer = allowedPlayer;
-  }
-
-  public static PlayerArgument player() {
-    return PLAYER;
   }
 
   public static PlayerArgument player(BiFunction<CommandSource, Player, Boolean> allowedPlayer) {

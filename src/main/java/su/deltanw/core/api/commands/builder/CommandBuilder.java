@@ -10,7 +10,6 @@ import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import it.unimi.dsi.fastutil.objects.Object2BooleanFunction;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
