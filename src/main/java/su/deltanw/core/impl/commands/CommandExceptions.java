@@ -19,7 +19,6 @@ public class CommandExceptions implements BuiltInExceptionProvider {
 
   public SimpleCommandExceptionType playersOnly;
   public DynamicCommandExceptionType playerNotFound;
-  public Component commandSyntax;
   public Component commandFailed;
 
   // Brigadier messages
@@ -57,7 +56,6 @@ public class CommandExceptions implements BuiltInExceptionProvider {
 
     this.playersOnly = deserializeStatic(brigadier.PLAYERS_ONLY);
     this.playerNotFound = deserializeDynamic(brigadier.PLAYER_NOT_FOUND);
-    this.commandSyntax = Core.getSerializer().deserialize(brigadier.COMMAND_SYNTAX);
     this.commandFailed = Core.getSerializer().deserialize(brigadier.COMMAND_FAILED);
 
     this.doubleTooLow = deserializeDynamicDouble(brigadier.DOUBLE_TOO_LOW);
