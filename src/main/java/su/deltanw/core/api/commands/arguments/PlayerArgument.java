@@ -16,6 +16,8 @@ import su.deltanw.core.impl.commands.CommandExceptions;
 public class PlayerArgument implements CustomArgumentType<Player, String> {
 
   public static final PlayerArgument EVERYONE = new PlayerArgument((context, player) -> true);
+  public static final PlayerArgument OTHER_PLAYERS = new PlayerArgument(
+    (source, suggested) -> suggested != source.sender());
 
   private BiFunction<CommandSource, Player, Boolean> allowedPlayer;
 
