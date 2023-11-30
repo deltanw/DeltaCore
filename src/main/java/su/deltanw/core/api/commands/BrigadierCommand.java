@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 import su.deltanw.core.api.commands.builder.CommandBuilder;
 
 public abstract class BrigadierCommand extends CommandBuilder implements Predicate<CommandSource> {
+
   private final List<String> aliases = new ArrayList<>();
   private String permission;
 

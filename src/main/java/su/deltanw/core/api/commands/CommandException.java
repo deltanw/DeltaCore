@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.kyori.adventure.text.Component;
 
 public class CommandException extends CommandSyntaxException {
+
   private static final CommandExceptionType EMPTY_TYPE = new CommandExceptionType() { };
   private static final Message EMPTY_MESSAGE = () -> "";
 

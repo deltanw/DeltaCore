@@ -12,6 +12,7 @@ import su.deltanw.core.config.MessagesConfig;
 import su.deltanw.core.impl.commands.CommandExceptions;
 
 public record CommandSource(Core core, CommandSender sender) {
+
   public boolean hasPermission(String permission) {
     return this.sender.hasPermission(permission);
   }

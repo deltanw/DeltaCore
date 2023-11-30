@@ -15,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 
 public class BrigadierTranslator {
+
   private final Map<CommandExceptionType, UnaryOperator<CommandSyntaxException>> translations = new HashMap<>();
 
   public CommandSyntaxException translate(CommandSyntaxException syntax) {
