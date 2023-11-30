@@ -34,7 +34,7 @@ public abstract class BrigadierCommand extends CommandBuilder implements Predica
   }
 
   @Override
-  public boolean test(CommandSource ctx) {
-    return this.getPermission() == null || ctx.hasPermission(this.getPermission());
+  public boolean test(CommandSource source) {
+    return this.getPermission() == null || source.hasPermission(this.getPermission());
   }
 }

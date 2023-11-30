@@ -49,16 +49,17 @@ public record CommandSource(Core core, CommandSender sender) {
       int cursor = Math.min(exception.getInput().length(), exception.getCursor());
 
       component = component.append(text("\n"));
-      String argument = exception.getInput().substring(Math.max(0, cursor - 10), cursor);
+
+      String incorrectPart = exception.getInput().substring(Math.max(0, cursor - 10), cursor);
       if (cursor > 10) {
-        argument = "..." + argument;
+        incorrectPart = "..." + incorrectPart;
       }
 
-      argument += Placeholders.replace(MessagesConfig.INSTANCE.MAIN.COMMAND_INCORRECT_PART,
+      incorrectPart += Placeholders.replace(MessagesConfig.INSTANCE.MAIN.COMMAND_INCORRECT_PART,
           exception.getInput().substring(cursor));
 
       component = component.append(Core.getSerializer().deserialize(
-          Placeholders.replace(MessagesConfig.INSTANCE.MAIN.COMMAND_SYNTAX, argument)));
+          Placeholders.replace(MessagesConfig.INSTANCE.MAIN.COMMAND_SYNTAX, incorrectPart)));
     }
 
     this.sendMessage(component);
