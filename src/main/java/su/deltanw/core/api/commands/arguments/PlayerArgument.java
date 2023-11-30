@@ -6,34 +6,33 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import it.unimi.dsi.fastutil.objects.Object2BooleanFunction;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import su.deltanw.core.api.commands.CommandSource;
 import su.deltanw.core.impl.commands.CommandExceptions;
 
 public class PlayerArgument implements CustomArgumentType<Player, String> {
 
-  private static final PlayerArgument PLAYER = new PlayerArgument(player -> true);
+  public static final PlayerArgument EVERYONE = new PlayerArgument((context, player) -> true);
+  public static final PlayerArgument OTHER_PLAYERS = new PlayerArgument(
+    (source, suggested) -> suggested != source.sender());
 
-  private Object2BooleanFunction<Player> allowedPlayer;
+  private BiFunction<CommandSource, Player, Boolean> allowedPlayer;
 
-  protected PlayerArgument(Object2BooleanFunction<Player> allowedPlayer) {
+  protected PlayerArgument(BiFunction<CommandSource, Player, Boolean> allowedPlayer) {
     this.allowedPlayer = allowedPlayer;
   }
 
-  public static PlayerArgument player() {
-    return PLAYER;
-  }
-
-  public static PlayerArgument player(Object2BooleanFunction<Player> allowedPlayer) {
+  public static PlayerArgument player(BiFunction<CommandSource, Player, Boolean> allowedPlayer) {
     return new PlayerArgument(allowedPlayer);
   }
 
   @Override
-  public Player parse(String playerName) throws CommandSyntaxException {
+  public Player parse(CommandSource source, String playerName) throws CommandSyntaxException {
     Player player = Bukkit.getPlayerExact(playerName);
-    if (player == null || !this.allowedPlayer.apply(player)) {
+    if (player == null || !this.allowedPlayer.apply(source, player)) {
       throw CommandExceptions.INSTANCE.playerNotFound.create(playerName);
     }
 
@@ -42,9 +41,11 @@ public class PlayerArgument implements CustomArgumentType<Player, String> {
 
   @Override
   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
+    CommandSource source = (CommandSource) context.getSource();
+
     String remaining = builder.getRemaining();
     for (Player player : Bukkit.getOnlinePlayers()) {
-      if (this.allowedPlayer.apply(player)) {
+      if (this.allowedPlayer.apply(source, player)) {
         String playerName = player.getName();
         if (playerName.startsWith(remaining)) {
           builder.suggest(playerName);
