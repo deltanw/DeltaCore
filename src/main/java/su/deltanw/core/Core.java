@@ -4,6 +4,10 @@ import java.util.UUID;
 
 import com.jeff_media.customblockdata.CustomBlockData;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.elytrium.commons.config.YamlConfig.LoadResult;
+import net.elytrium.commons.kyori.serialization.Serializer;
+import net.elytrium.commons.kyori.serialization.Serializers;
+import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
@@ -14,9 +18,11 @@ import su.deltanw.core.api.ComponentFactory;
 import su.deltanw.core.api.Menus;
 import su.deltanw.core.api.Placeholder;
 import su.deltanw.core.api.Placeholders;
+import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.config.BlocksConfig;
 import su.deltanw.core.config.ItemsConfig;
+import su.deltanw.core.config.MessagesConfig;
 import su.deltanw.core.devtool.DevToolCommand;
 import su.deltanw.core.hook.worldedit.WorldEditHook;
 import su.deltanw.core.impl.ComponentFactoryImpl;
@@ -45,6 +51,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.impl.block.CustomBlockListener;
 import su.deltanw.core.impl.block.CustomBlockNettyHandler;
+import su.deltanw.core.impl.commands.BrigadierListener;
+import su.deltanw.core.impl.commands.CommandManager;
 import su.deltanw.core.impl.injection.InjectorImpl;
 import su.deltanw.core.impl.item.CustomItem;
 
@@ -58,8 +66,11 @@ public final class Core extends JavaPlugin implements Listener {
       0x0A08, 0x0A09, 0x0A0A, 0x0A0F, 0x0A10, 0x0A13, 0x0A14, 0x0A15, 0x0A16, 0x0A17, 0x0A18, 0x0A19, 0x0A1A, 0x0A1B, 0x0A1C, 0x0A1D, 0x0A1E, 0x0A1F, 0x0A20
   };
 
+  private static Serializer SERIALIZER;
+
   private final Map<String, TextComponent> prefixes = new HashMap<>();
 
+  private CommandManager commandManager;
   private ComponentFactory componentFactory;
   private Placeholders placeholders;
   private Injector injector;
@@ -70,6 +81,14 @@ public final class Core extends JavaPlugin implements Listener {
   private Component errorComponent;
 
   private LuckPerms luckPerms;
+
+  public static void setSerializer(Serializer serializer) {
+    SERIALIZER = serializer;
+  }
+
+  public static Serializer getSerializer() {
+    return SERIALIZER;
+  }
 
   private Map<String, TextComponent> listComponents(File directory) {
     Map<String, TextComponent> componentMap = new HashMap<>();
@@ -91,6 +110,10 @@ public final class Core extends JavaPlugin implements Listener {
     }
 
     return componentMap;
+  }
+
+  public void registerCommand(BrigadierCommand command) {
+    this.commandManager.register(command);
   }
 
   public String getPrefix(UUID player) {
@@ -116,9 +139,22 @@ public final class Core extends JavaPlugin implements Listener {
     BlocksConfig.INSTANCE.reload(new File(getDataFolder(), "blocks.yml"));
     ItemsConfig.INSTANCE.reload(new File(getDataFolder(), "items.yml"));
 
+    File messagesConfig = new File(getDataFolder(), "messages.yml");
+    MessagesConfig.INSTANCE.load(messagesConfig, MessagesConfig.INSTANCE.PREFIX); // Load prefix
+    MessagesConfig.INSTANCE.reload(messagesConfig, MessagesConfig.INSTANCE.PREFIX); // Use prefix
+
+    ComponentSerializer<Component, Component, String> serializer = MessagesConfig.INSTANCE.SERIALIZER.getSerializer();
+    if (serializer == null) {
+      getLogger().warning("The specified serializer could not be found, using default. (LEGACY_AMPERSAND)");
+      setSerializer(new Serializer(Objects.requireNonNull(Serializers.LEGACY_AMPERSAND.getSerializer())));
+    } else {
+      setSerializer(new Serializer(serializer));
+    }
+
     this.luckPerms = LuckPermsProvider.get();
 
     final InjectorImpl injectorImpl = new InjectorImpl();
+    this.commandManager = new CommandManager(this);
     this.componentFactory = new ComponentFactoryImpl(PIXELS, PIXELS_EXT);
     this.placeholders = new PlaceholdersImpl();
     this.injector = injectorImpl;
@@ -159,9 +195,10 @@ public final class Core extends JavaPlugin implements Listener {
     Bukkit.getPluginManager().registerEvents(this, this);
     Bukkit.getPluginManager().registerEvents(menus, this);
     Bukkit.getPluginManager().registerEvents(new CustomBlockListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new BrigadierListener(this), this);
     CustomBlockData.registerListener(this);
 
-    Objects.requireNonNull(Bukkit.getPluginCommand("devtool")).setExecutor(new DevToolCommand(this));
+    this.registerCommand(new DevToolCommand());
 
     this.placeholders.addPlaceholder(new Placeholder(
         "player_name",
@@ -211,6 +248,17 @@ public final class Core extends JavaPlugin implements Listener {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public void onDisable() {
+    if (this.commandManager != null) {
+      this.commandManager.deject();
+    }
+  }
+
+  public CommandManager getCommandManager() {
+    return this.commandManager;
   }
 
   public ComponentFactory getComponentFactory() {
