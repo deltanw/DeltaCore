@@ -14,6 +14,9 @@ import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.query.QueryOptions;
 import org.bukkit.NamespacedKey;
+import org.bukkit.util.BlockVector;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import su.deltanw.core.api.ComponentFactory;
 import su.deltanw.core.api.Menus;
 import su.deltanw.core.api.Placeholder;
@@ -22,6 +25,7 @@ import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.config.BlocksConfig;
 import su.deltanw.core.config.ItemsConfig;
+import su.deltanw.core.config.ModelsConfig;
 import su.deltanw.core.config.MessagesConfig;
 import su.deltanw.core.devtool.DevToolCommand;
 import su.deltanw.core.hook.worldedit.WorldEditHook;
@@ -55,6 +59,9 @@ import su.deltanw.core.impl.commands.BrigadierListener;
 import su.deltanw.core.impl.commands.CommandManager;
 import su.deltanw.core.impl.injection.InjectorImpl;
 import su.deltanw.core.impl.item.CustomItem;
+import su.deltanw.core.impl.model.CustomModel;
+import su.deltanw.core.impl.model.CustomModelListener;
+import su.deltanw.core.impl.model.CustomModelNettyHandler;
 
 public final class Core extends JavaPlugin implements Listener {
 
@@ -138,6 +145,7 @@ public final class Core extends JavaPlugin implements Listener {
   public void onEnable() {
     BlocksConfig.INSTANCE.reload(new File(getDataFolder(), "blocks.yml"));
     ItemsConfig.INSTANCE.reload(new File(getDataFolder(), "items.yml"));
+    ModelsConfig.INSTANCE.reload(new File(getDataFolder(), "models.yml"));
 
     File messagesConfig = new File(getDataFolder(), "messages.yml");
     MessagesConfig.INSTANCE.load(messagesConfig, MessagesConfig.INSTANCE.PREFIX); // Load prefix
@@ -182,8 +190,26 @@ public final class Core extends JavaPlugin implements Listener {
 
     getLogger().info("Loaded " + CustomItem.getAll().size() + " custom items.");
 
-    injector.addInjector(channel ->
-        channel.pipeline().addBefore("packet_handler", "custom_block_handler", new CustomBlockNettyHandler(this)));
+    ModelsConfig.INSTANCE.CUSTOM_MODELS.forEach(value -> {
+      NamespacedKey namespacedKey = NamespacedKey.fromString(value.MODEL_KEY);
+      try {
+        CustomModel.register(namespacedKey, value.DISPLAY_MODE,
+            new Vector3f((float) value.SCALE.X, (float) value.SCALE.Y, (float) value.SCALE.Z),
+            new Vector3f((float) value.TRANSLATION.X, (float) value.TRANSLATION.Y, (float) value.TRANSLATION.Z),
+            new Vector2f((float) value.ROTATION.X, (float) value.ROTATION.Y),
+            value.HITBOXES.stream().map(hitbox -> new BlockVector(hitbox.X, hitbox.Y, hitbox.Z)).toList(),
+            value.MODEL_ITEM);
+      } catch (CommandSyntaxException e) {
+        throw new IllegalArgumentException(e);
+      }
+    });
+
+    getLogger().info("Loaded " + CustomModel.getAll().size() + " custom models.");
+
+    injector.addInjector(channel -> {
+        channel.pipeline().addBefore("packet_handler", "custom_block_handler", new CustomBlockNettyHandler(this));
+        channel.pipeline().addBefore("packet_handler", "custom_model_handler", new CustomModelNettyHandler(this));
+    });
 
     injectorImpl.inject();
     getLogger().info("Successfully injected.");
@@ -195,6 +221,7 @@ public final class Core extends JavaPlugin implements Listener {
     Bukkit.getPluginManager().registerEvents(this, this);
     Bukkit.getPluginManager().registerEvents(menus, this);
     Bukkit.getPluginManager().registerEvents(new CustomBlockListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new CustomModelListener(this), this);
     Bukkit.getPluginManager().registerEvents(new BrigadierListener(this), this);
     CustomBlockData.registerListener(this);
 
