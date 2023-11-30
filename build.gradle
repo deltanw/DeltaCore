@@ -33,6 +33,7 @@ dependencies {
   compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core'
   compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit'
   api 'net.elytrium.commons:config:1.2.1'
+  api 'net.elytrium.commons:kyori:1.2.1'
 
 }
 
