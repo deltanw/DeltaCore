@@ -12,6 +12,7 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import it.unimi.dsi.fastutil.objects.Object2BooleanFunction;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import su.deltanw.core.api.commands.CommandSource;
@@ -96,7 +97,7 @@ public class CommandBuilder extends com.mojang.brigadier.builder.ArgumentBuilder
     return this.argument(name, LongArgumentType.longArg(), builder);
   }
 
-  public CommandBuilder playerArg(String name, Object2BooleanFunction<Player> allowedPlayer,
+  public CommandBuilder playerArg(String name, BiFunction<CommandSource, Player, Boolean> allowedPlayer,
       Consumer<ArgumentBuilder<Player>> builder) {
     return this.argument(name, PlayerArgument.player(allowedPlayer), builder);
   }
