@@ -1,5 +1,7 @@
 package su.deltanw.core;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
 
 import com.jeff_media.customblockdata.CustomBlockData;
@@ -14,6 +16,8 @@ import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.query.QueryOptions;
 import org.bukkit.NamespacedKey;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.bukkit.util.BlockVector;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -23,6 +27,7 @@ import su.deltanw.core.api.Placeholder;
 import su.deltanw.core.api.Placeholders;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.injection.Injector;
+import su.deltanw.core.api.pack.*;
 import su.deltanw.core.config.BlocksConfig;
 import su.deltanw.core.config.ItemsConfig;
 import su.deltanw.core.config.ModelsConfig;
@@ -39,6 +44,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -59,6 +65,9 @@ import su.deltanw.core.impl.commands.BrigadierListener;
 import su.deltanw.core.impl.commands.CommandManager;
 import su.deltanw.core.impl.injection.InjectorImpl;
 import su.deltanw.core.impl.item.CustomItem;
+import su.deltanw.core.impl.pack.PackBuilderImpl;
+import su.deltanw.core.impl.pack.PackSenderImpl;
+import su.deltanw.core.impl.pack.PackUploaderImpl;
 import su.deltanw.core.impl.model.CustomModel;
 import su.deltanw.core.impl.model.CustomModelListener;
 import su.deltanw.core.impl.model.CustomModelNettyHandler;
@@ -83,8 +92,13 @@ public final class Core extends JavaPlugin implements Listener {
   private Injector injector;
   private Menus menus;
 
+  private ObservablePackBuilder<?> defaultPackBuilder;
+  private CachingPackUploader defaultPackUploader;
+  private PackSender defaultPackSender;
+
   private Component listHeader;
   private Component listFooter;
+  @MonotonicNonNull
   private Component errorComponent;
 
   private LuckPerms luckPerms;
@@ -167,6 +181,31 @@ public final class Core extends JavaPlugin implements Listener {
     this.placeholders = new PlaceholdersImpl();
     this.injector = injectorImpl;
     this.menus = new MenusImpl();
+
+    this.defaultPackBuilder = new PackBuilderImpl()
+        .withPackMeta(new PackMeta(4, "DeltaNetwork resource pack."));
+    this.defaultPackBuilder.addObserver(this::updatePack);
+    this.defaultPackUploader = new PackUploaderImpl(getDataFolder().toPath().resolve("pack/dist"));
+    this.defaultPackSender = new PackSenderImpl();
+
+    try {
+      Path staticPackPath = getDataFolder().toPath().resolve("pack/static");
+      Files.createDirectories(staticPackPath);
+      try (Stream<Path> stream = Files.walk(staticPackPath)) {
+          stream.filter(Files::isRegularFile)
+              .forEach(path -> {
+                try {
+                  byte[] data = Files.readAllBytes(path);
+                  String zipPath = staticPackPath.relativize(path).toString();
+                  this.defaultPackBuilder.addFile(zipPath, data);
+                } catch (IOException e) {
+                  throw new RuntimeException("Couldn't read static pack file.", e);
+                }
+              });
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Couldn't load static pack files.", e);
+    }
 
     BlocksConfig.INSTANCE.CUSTOM_BLOCKS.forEach(value -> {
       NamespacedKey namespacedKey = NamespacedKey.fromString(value.CUSTOM_BLOCK_KEY, this);
@@ -268,10 +307,18 @@ public final class Core extends JavaPlugin implements Listener {
         (data, player) -> Component.text(Objects.requireNonNullElse(this.getPrefix(player.getUniqueId()), ""))
     ));
 
+    listHeader = Component.text("ஜ\n\n\n\n");
+    listFooter = Component.text("\nwww.deltanw.su", TextColor.color(0xE17F30));
+
     try {
-      listHeader = Component.text("ஜ\n\n\n\n");
-      listFooter = Component.text("\nwww.deltanw.su", TextColor.color(0xE17F30));
       errorComponent = componentFactory.buildComponent(ImageIO.read(new File(getDataFolder(), "error.png")));
+    } catch (IOException e) {
+      getLogger().warning("Unable to load error component image.");
+      errorComponent = Component.text("[!]", NamedTextColor.RED);
+    }
+
+    try {
+      this.defaultPackBuilder.build();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -304,6 +351,18 @@ public final class Core extends JavaPlugin implements Listener {
     return menus;
   }
 
+  public ObservablePackBuilder<?> getDefaultPackBuilder() {
+    return defaultPackBuilder;
+  }
+
+  public CachingPackUploader getDefaultPackUploader() {
+    return defaultPackUploader;
+  }
+
+  public PackSender getDefaultPackSender() {
+    return defaultPackSender;
+  }
+
   public Component getErrorComponent() {
     return errorComponent;
   }
@@ -312,9 +371,56 @@ public final class Core extends JavaPlugin implements Listener {
     return luckPerms;
   }
 
+  public void sendPack(Player player) throws IOException {
+    UploadedResourcePack cache = defaultPackUploader.getCache();
+    if (cache != null) {
+      defaultPackSender.send(player, cache);
+    } else {
+      forceRebuildPack();
+    }
+  }
+
+  public void updatePack() throws IOException {
+    defaultPackBuilder.build();
+  }
+
+  public void forceUpdatePack() throws IOException {
+    boolean needUpdate = !defaultPackBuilder.isDirty();
+    ResourcePack pack = defaultPackBuilder.build();
+    if (needUpdate) {
+      updatePack(pack);
+    }
+  }
+
+  public void forceRebuildPack() throws IOException {
+    defaultPackBuilder.makeDirty();
+    updatePack();
+  }
+
+  private void updatePack(ResourcePack pack) {
+    try {
+      UploadedResourcePack uploaded = defaultPackUploader.upload(pack);
+      getLogger().info("Uploaded pack to " + uploaded.url());
+      defaultPackSender.trackingSend(uploaded);
+    } catch (IOException e) {
+      throw new RuntimeException("Couldn't apply resource pack", e);
+    }
+  }
+
   @EventHandler
   public void onJoin(PlayerJoinEvent event) {
     Player player = event.getPlayer();
     player.sendPlayerListHeaderAndFooter(listHeader, listFooter);
+    try {
+      defaultPackSender.addTrackingPlayer(player);
+      sendPack(player);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @EventHandler
+  public void onQuit(PlayerQuitEvent event) {
+    defaultPackSender.removeTrackingPlayer(event.getPlayer());
   }
 }
