@@ -28,10 +28,8 @@ import su.deltanw.core.api.Placeholders;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.api.pack.*;
-import su.deltanw.core.config.BlocksConfig;
-import su.deltanw.core.config.ItemsConfig;
-import su.deltanw.core.config.ModelsConfig;
-import su.deltanw.core.config.MessagesConfig;
+import su.deltanw.core.config.*;
+import su.deltanw.core.devapi.NettyHttpServer;
 import su.deltanw.core.devtool.DevToolCommand;
 import su.deltanw.core.hook.worldedit.WorldEditHook;
 import su.deltanw.core.impl.ComponentFactoryImpl;
@@ -96,6 +94,8 @@ public final class Core extends JavaPlugin implements Listener {
   private CachingPackUploader defaultPackUploader;
   private PackSender defaultPackSender;
 
+  private NettyHttpServer devServer = null;
+
   private Component listHeader;
   private Component listFooter;
   @MonotonicNonNull
@@ -157,9 +157,9 @@ public final class Core extends JavaPlugin implements Listener {
 
   @Override
   public void onEnable() {
-    BlocksConfig.INSTANCE.reload(new File(getDataFolder(), "blocks.yml"));
-    ItemsConfig.INSTANCE.reload(new File(getDataFolder(), "items.yml"));
-    ModelsConfig.INSTANCE.reload(new File(getDataFolder(), "models.yml"));
+    new File(getDataFolder(), "dev").mkdirs();
+    DevConfig.INSTANCE.reload(new File(getDataFolder(), "dev/config.yml"));
+    DevTokens.INSTANCE.reload(new File(getDataFolder(), "dev/tokens.yml"));
 
     File messagesConfig = new File(getDataFolder(), "messages.yml");
     MessagesConfig.INSTANCE.load(messagesConfig, MessagesConfig.INSTANCE.PREFIX); // Load prefix
@@ -188,62 +188,11 @@ public final class Core extends JavaPlugin implements Listener {
     this.defaultPackUploader = new PackUploaderImpl(getDataFolder().toPath().resolve("pack/dist"));
     this.defaultPackSender = new PackSenderImpl();
 
-    try {
-      Path staticPackPath = getDataFolder().toPath().resolve("pack/static");
-      Files.createDirectories(staticPackPath);
-      try (Stream<Path> stream = Files.walk(staticPackPath)) {
-          stream.filter(Files::isRegularFile)
-              .forEach(path -> {
-                try {
-                  byte[] data = Files.readAllBytes(path);
-                  String zipPath = staticPackPath.relativize(path).toString();
-                  this.defaultPackBuilder.addFile(zipPath, data);
-                } catch (IOException e) {
-                  throw new RuntimeException("Couldn't read static pack file.", e);
-                }
-              });
-      }
-    } catch (IOException e) {
-      throw new RuntimeException("Couldn't load static pack files.", e);
-    }
+    loadPack();
 
-    BlocksConfig.INSTANCE.CUSTOM_BLOCKS.forEach(value -> {
-      NamespacedKey namespacedKey = NamespacedKey.fromString(value.CUSTOM_BLOCK_KEY, this);
-      try {
-        CustomBlock.register(namespacedKey, value.SERVERSIDE_BLOCK, value.CLIENTSIDE_BLOCK, value.BLOCK_ITEM);
-      } catch (CommandSyntaxException e) {
-        throw new IllegalArgumentException(e);
-      }
-    });
-
-    getLogger().info("Loaded " + CustomBlock.getAll().size() + " custom blocks.");
-
-    ItemsConfig.INSTANCE.CUSTOM_ITEMS.forEach(value -> {
-      NamespacedKey namespacedKey = NamespacedKey.fromString(value.CUSTOM_ITEM_KEY, this);
-      try {
-        CustomItem.register(namespacedKey, value.SERVERSIDE_ITEM);
-      } catch (CommandSyntaxException e) {
-        throw new IllegalArgumentException(e);
-      }
-    });
-
-    getLogger().info("Loaded " + CustomItem.getAll().size() + " custom items.");
-
-    ModelsConfig.INSTANCE.CUSTOM_MODELS.forEach(value -> {
-      NamespacedKey namespacedKey = NamespacedKey.fromString(value.MODEL_KEY);
-      try {
-        CustomModel.register(namespacedKey, value.DISPLAY_MODE,
-            new Vector3f((float) value.SCALE.X, (float) value.SCALE.Y, (float) value.SCALE.Z),
-            new Vector3f((float) value.TRANSLATION.X, (float) value.TRANSLATION.Y, (float) value.TRANSLATION.Z),
-            new Vector2f((float) value.ROTATION.X, (float) value.ROTATION.Y),
-            value.HITBOXES.stream().map(hitbox -> new BlockVector(hitbox.X, hitbox.Y, hitbox.Z)).toList(),
-            value.MODEL_ITEM);
-      } catch (CommandSyntaxException e) {
-        throw new IllegalArgumentException(e);
-      }
-    });
-
-    getLogger().info("Loaded " + CustomModel.getAll().size() + " custom models.");
+    loadCustomBlocks();
+    loadCustomItems();
+    loadCustomModels();
 
     injector.addInjector(channel -> {
         channel.pipeline().addBefore("packet_handler", "custom_block_handler", new CustomBlockNettyHandler(this));
@@ -322,13 +271,95 @@ public final class Core extends JavaPlugin implements Listener {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+
+    if (DevConfig.INSTANCE.ENABLE_DEV_SERVER) {
+      devServer = new NettyHttpServer(this, DevConfig.INSTANCE.DEV_SERVER_PORT);
+      devServer.start();
+      getLogger().info("Started dev server on port " + DevConfig.INSTANCE.DEV_SERVER_PORT);
+    }
   }
 
   @Override
   public void onDisable() {
+    if (devServer != null) {
+      getLogger().info("Stopping dev server...");
+      devServer.close();
+    }
+
     if (this.commandManager != null) {
       this.commandManager.deject();
     }
+  }
+
+  public void loadPack() {
+    try {
+      Path staticPackPath = getDataFolder().toPath().resolve("pack/static");
+      Files.createDirectories(staticPackPath);
+      try (Stream<Path> stream = Files.walk(staticPackPath)) {
+        stream.filter(Files::isRegularFile)
+            .forEach(path -> {
+              try {
+                byte[] data = Files.readAllBytes(path);
+                String zipPath = staticPackPath.relativize(path).toString();
+                this.defaultPackBuilder.addFile(zipPath, data);
+              } catch (IOException e) {
+                throw new RuntimeException("Couldn't read static pack file.", e);
+              }
+            });
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Couldn't load static pack files.", e);
+    }
+  }
+
+  public void loadCustomBlocks() {
+    BlocksConfig.INSTANCE.reload(new File(getDataFolder(), "blocks.yml"));
+
+    BlocksConfig.INSTANCE.CUSTOM_BLOCKS.forEach(value -> {
+      NamespacedKey namespacedKey = NamespacedKey.fromString(value.CUSTOM_BLOCK_KEY, this);
+      try {
+        CustomBlock.register(namespacedKey, value.SERVERSIDE_BLOCK, value.CLIENTSIDE_BLOCK, value.BLOCK_ITEM);
+      } catch (CommandSyntaxException e) {
+        throw new IllegalArgumentException(e);
+      }
+    });
+
+    getLogger().info("Loaded " + CustomBlock.getAll().size() + " custom blocks.");
+  }
+
+  public void loadCustomItems() {
+    ItemsConfig.INSTANCE.reload(new File(getDataFolder(), "items.yml"));
+
+    ItemsConfig.INSTANCE.CUSTOM_ITEMS.forEach(value -> {
+      NamespacedKey namespacedKey = NamespacedKey.fromString(value.CUSTOM_ITEM_KEY, this);
+      try {
+        CustomItem.register(namespacedKey, value.SERVERSIDE_ITEM);
+      } catch (CommandSyntaxException e) {
+        throw new IllegalArgumentException(e);
+      }
+    });
+
+    getLogger().info("Loaded " + CustomItem.getAll().size() + " custom items.");
+  }
+
+  public void loadCustomModels() {
+    ModelsConfig.INSTANCE.reload(new File(getDataFolder(), "models.yml"));
+
+    ModelsConfig.INSTANCE.CUSTOM_MODELS.forEach(value -> {
+      NamespacedKey namespacedKey = NamespacedKey.fromString(value.MODEL_KEY);
+      try {
+        CustomModel.register(namespacedKey, value.DISPLAY_MODE,
+            new Vector3f((float) value.SCALE.X, (float) value.SCALE.Y, (float) value.SCALE.Z),
+            new Vector3f((float) value.TRANSLATION.X, (float) value.TRANSLATION.Y, (float) value.TRANSLATION.Z),
+            new Vector2f((float) value.ROTATION.X, (float) value.ROTATION.Y),
+            value.HITBOXES.stream().map(hitbox -> new BlockVector(hitbox.X, hitbox.Y, hitbox.Z)).toList(),
+            value.MODEL_ITEM);
+      } catch (CommandSyntaxException e) {
+        throw new IllegalArgumentException(e);
+      }
+    });
+
+    getLogger().info("Loaded " + CustomModel.getAll().size() + " custom models.");
   }
 
   public CommandManager getCommandManager() {
