@@ -28,6 +28,7 @@ import su.deltanw.core.api.Placeholders;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.api.pack.*;
+import su.deltanw.core.api.syncher.ClientSyncher;
 import su.deltanw.core.config.BlocksConfig;
 import su.deltanw.core.config.ItemsConfig;
 import su.deltanw.core.config.ModelsConfig;
@@ -71,6 +72,8 @@ import su.deltanw.core.impl.pack.PackUploaderImpl;
 import su.deltanw.core.impl.model.CustomModel;
 import su.deltanw.core.impl.model.CustomModelListener;
 import su.deltanw.core.impl.model.CustomModelNettyHandler;
+import su.deltanw.core.impl.syncher.PingSyncher;
+import su.deltanw.core.impl.syncher.PingSyncherNettyHandler;
 
 public final class Core extends JavaPlugin implements Listener {
 
@@ -86,6 +89,7 @@ public final class Core extends JavaPlugin implements Listener {
 
   private final Map<String, TextComponent> prefixes = new HashMap<>();
 
+  private ClientSyncher clientSyncher;
   private CommandManager commandManager;
   private ComponentFactory componentFactory;
   private Placeholders placeholders;
@@ -176,6 +180,7 @@ public final class Core extends JavaPlugin implements Listener {
     this.luckPerms = LuckPermsProvider.get();
 
     final InjectorImpl injectorImpl = new InjectorImpl();
+    this.clientSyncher = new PingSyncher();
     this.commandManager = new CommandManager(this);
     this.componentFactory = new ComponentFactoryImpl(PIXELS, PIXELS_EXT);
     this.placeholders = new PlaceholdersImpl();
@@ -246,6 +251,7 @@ public final class Core extends JavaPlugin implements Listener {
     getLogger().info("Loaded " + CustomModel.getAll().size() + " custom models.");
 
     injector.addInjector(channel -> {
+        channel.pipeline().addBefore("packet_handler", "ping_syncher", new PingSyncherNettyHandler(this));
         channel.pipeline().addBefore("packet_handler", "custom_block_handler", new CustomBlockNettyHandler(this));
         channel.pipeline().addBefore("packet_handler", "custom_model_handler", new CustomModelNettyHandler(this));
     });
@@ -329,6 +335,10 @@ public final class Core extends JavaPlugin implements Listener {
     if (this.commandManager != null) {
       this.commandManager.deject();
     }
+  }
+
+  public ClientSyncher getClientSyncher() {
+    return this.clientSyncher;
   }
 
   public CommandManager getCommandManager() {
