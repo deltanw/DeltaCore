@@ -28,6 +28,7 @@ import su.deltanw.core.api.Placeholders;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.api.pack.*;
+import su.deltanw.core.config.BiomesConfig;
 import su.deltanw.core.config.BlocksConfig;
 import su.deltanw.core.config.ItemsConfig;
 import su.deltanw.core.config.ModelsConfig;
@@ -58,6 +59,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import su.deltanw.core.impl.biome.CustomBiome;
 import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.impl.block.CustomBlockListener;
 import su.deltanw.core.impl.block.CustomBlockNettyHandler;
@@ -160,6 +162,7 @@ public final class Core extends JavaPlugin implements Listener {
     BlocksConfig.INSTANCE.reload(new File(getDataFolder(), "blocks.yml"));
     ItemsConfig.INSTANCE.reload(new File(getDataFolder(), "items.yml"));
     ModelsConfig.INSTANCE.reload(new File(getDataFolder(), "models.yml"));
+    BiomesConfig.INSTANCE.reload(new File(getDataFolder(), "biomes.yml"));
 
     File messagesConfig = new File(getDataFolder(), "messages.yml");
     MessagesConfig.INSTANCE.load(messagesConfig, MessagesConfig.INSTANCE.PREFIX); // Load prefix
@@ -244,6 +247,12 @@ public final class Core extends JavaPlugin implements Listener {
     });
 
     getLogger().info("Loaded " + CustomModel.getAll().size() + " custom models.");
+
+    BiomesConfig.INSTANCE.CUSTOM_BIOMES.forEach(value -> {
+      CustomBiome.registerFromConfig(value.BIOME_KEY, value);
+    });
+
+    getLogger().info("Loaded " + CustomBiome.getAll().size() + " custom biomes.");
 
     injector.addInjector(channel -> {
         channel.pipeline().addBefore("packet_handler", "custom_block_handler", new CustomBlockNettyHandler(this));
