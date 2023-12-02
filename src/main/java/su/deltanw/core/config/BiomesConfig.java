@@ -108,6 +108,26 @@ public class BiomesConfig extends YamlConfig {
       }
     }
 
-    // TODO: biome generation
+    @Create
+    public GENERATION GENERATION;
+
+    public static class GENERATION {
+
+      public List<FEATURE> FEATURES;
+
+      public static class FEATURE {
+
+        public String DECORATION_STEP;
+        public String JSON_FILE;
+      }
+
+      public List<CARVER> CARVERS;
+
+      public static class CARVER {
+
+        public String CARVING;
+        public String JSON_FILE;
+      }
+    }
   }
 }

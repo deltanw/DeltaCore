@@ -1,12 +1,19 @@
 package su.deltanw.core.impl.biome;
 
+import com.google.gson.JsonElement;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.Lifecycle;
 import com.sk89q.worldedit.world.biome.BiomeType;
 import com.sk89q.worldedit.world.biome.BiomeTypes;
 import io.papermc.paper.adventure.PaperAdventure;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -17,9 +24,11 @@ import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.AmbientAdditionsSettings;
@@ -32,10 +41,16 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.BiomeSpecialEffects.GrassColorModifier;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.biome.MobSpawnSettings.SpawnerData;
+import net.minecraft.world.level.levelgen.GenerationStep.Carving;
+import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
+import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.v1_20_R1.CraftRegistry;
 import su.deltanw.core.Core;
 import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome;
+import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.GENERATION.CARVER;
+import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.GENERATION.FEATURE;
 import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.MOB_SPAWN.SPAWN_COST;
 import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.MOB_SPAWN.SPAWNERS;
 import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.EFFECTS;
@@ -152,15 +167,36 @@ public record CustomBiome(NamespacedKey key, Biome biome) {
       mobBuilder.addSpawn(MobCategory.valueOf(spawner.MOB_CATEGORY), data);
     }
 
+    BiomeGenerationSettings.PlainBuilder generator = new BiomeGenerationSettings.PlainBuilder();
+
+    try {
+      RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, CraftRegistry.getMinecraftRegistry());
+      for (FEATURE feature : biome.GENERATION.FEATURES) {
+        String jsonFile = Files.readString(Path.of(feature.JSON_FILE), StandardCharsets.UTF_8);
+        Dynamic<JsonElement> dynamic = new Dynamic<>(ops, GsonHelper.parse(jsonFile));
+
+        generator.addFeature(Decoration.valueOf(feature.DECORATION_STEP),
+            PlacedFeature.CODEC.decode(dynamic).get().orThrow().getFirst());
+      }
+
+      for (CARVER carver : biome.GENERATION.CARVERS) {
+        String jsonFile = Files.readString(Path.of(carver.JSON_FILE), StandardCharsets.UTF_8);
+        Dynamic<JsonElement> dynamic = new Dynamic<>(ops, GsonHelper.parse(jsonFile));
+
+        generator.addCarver(Carving.valueOf(carver.CARVING),
+            ConfiguredWorldCarver.CODEC.decode(dynamic).get().orThrow().getFirst());
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
     return new BiomeBuilder()
         .hasPrecipitation(biome.PRECIPITATION)
         .temperature((float) biome.TEMPERATURE)
         .downfall((float) biome.DOWNFALL)
         .specialEffects(specialEffects.build())
         .mobSpawnSettings(mobBuilder.build())
-
-        // TODO: generation settings
-        .generationSettings(new BiomeGenerationSettings.PlainBuilder().build());
+        .generationSettings(generator.build());
   }
 
   private static ParticleOptions parseParticle(String description) {
