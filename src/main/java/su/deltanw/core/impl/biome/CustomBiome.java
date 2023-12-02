@@ -20,6 +20,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.AmbientAdditionsSettings;
 import net.minecraft.world.level.biome.AmbientMoodSettings;
 import net.minecraft.world.level.biome.AmbientParticleSettings;
@@ -29,18 +31,25 @@ import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.BiomeSpecialEffects.GrassColorModifier;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.biome.MobSpawnSettings.SpawnerData;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.v1_20_R1.CraftRegistry;
 import su.deltanw.core.Core;
 import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome;
-import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.Effects;
-import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.Effects.Ambient;
+import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.MOB_SPAWN.SPAWN_COST;
+import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.MOB_SPAWN.SPAWNERS;
+import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.EFFECTS;
+import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.EFFECTS.AMBIENT;
+import su.deltanw.core.impl.util.UnsafeUtil;
 
 public record CustomBiome(NamespacedKey key, Biome biome) {
 
   private static final Map<NamespacedKey, CustomBiome> BIOME_REGISTRY = new HashMap<>();
+  private static final long SPAWN_ENTITY_TYPE_OFFSET;
 
   static {
+    SPAWN_ENTITY_TYPE_OFFSET = UnsafeUtil.fieldOffset(SpawnerData.class.getDeclaredFields()[0]);
+
     // Unfrozing registry makes it able to register new items
     Field frozen = MappedRegistry.class.getDeclaredFields()[10];
     frozen.setAccessible(true);
@@ -80,8 +89,8 @@ public record CustomBiome(NamespacedKey key, Biome biome) {
   }
 
   private static BiomeBuilder buildFromConfig(SerializedCustomBiome biome) {
-    Effects effects = biome.EFFECTS;
-    Ambient ambient = effects.AMBIENT;
+    EFFECTS effects = biome.EFFECTS;
+    AMBIENT ambient = effects.AMBIENT;
 
     ParticleOptions particleOptions = parseParticle(ambient.PARTICLE.PARTICLE);
 
@@ -121,14 +130,34 @@ public record CustomBiome(NamespacedKey key, Biome biome) {
           particleOptions, (float) ambient.PARTICLE.PROBABILITY));
     }
 
+    MobSpawnSettings.Builder mobBuilder = new MobSpawnSettings.Builder()
+        .creatureGenerationProbability((float) biome.MOB_SPAWN.CREATURE_GENERATION_PROBABILITY);
+
+    for (SPAWN_COST spawnCost : biome.MOB_SPAWN.SPAWN_COST) {
+      EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(new ResourceLocation(spawnCost.ENTITY_TYPE));
+
+      mobBuilder.addMobCharge(entityType, spawnCost.ENERGY_BUDGET, spawnCost.CHARGE);
+    }
+
+    for (SPAWNERS spawner : biome.MOB_SPAWN.SPAWNERS) {
+      EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(new ResourceLocation(spawner.ENTITY_TYPE));
+
+      MobSpawnSettings.SpawnerData data = new MobSpawnSettings.SpawnerData(
+          entityType, spawner.WEIGHT, spawner.MIN_COUNT, spawner.MAX_COUNT
+      );
+
+      // Spawner replaces "MISC" entities with pig.
+      UnsafeUtil.UNSAFE.putObject(data, SPAWN_ENTITY_TYPE_OFFSET, entityType);
+
+      mobBuilder.addSpawn(MobCategory.valueOf(spawner.MOB_CATEGORY), data);
+    }
+
     return new BiomeBuilder()
         .hasPrecipitation(biome.PRECIPITATION)
         .temperature((float) biome.TEMPERATURE)
         .downfall((float) biome.DOWNFALL)
         .specialEffects(specialEffects.build())
-
-        // TODO: mob spawn settings
-        .mobSpawnSettings(new MobSpawnSettings.Builder().build())
+        .mobSpawnSettings(mobBuilder.build())
 
         // TODO: generation settings
         .generationSettings(new BiomeGenerationSettings.PlainBuilder().build());

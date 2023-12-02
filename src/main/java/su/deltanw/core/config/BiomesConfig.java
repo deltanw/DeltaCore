@@ -19,9 +19,9 @@ public class BiomesConfig extends YamlConfig {
     public double DOWNFALL;
 
     @Create
-    public Effects EFFECTS;
+    public EFFECTS EFFECTS;
 
-    public static class Effects {
+    public static class EFFECTS {
 
       public int FOG_COLOR;
       public int WATER_COLOR;
@@ -32,25 +32,25 @@ public class BiomesConfig extends YamlConfig {
       public String GRASS_COLOR_MODIFIER;
 
       @Create
-      public Ambient AMBIENT;
+      public AMBIENT AMBIENT;
 
-      public static class Ambient {
+      public static class AMBIENT {
 
         public String SOUND;
 
         @Create
-        public Particle PARTICLE;
+        public PARTICLE PARTICLE;
 
-        public static class Particle {
+        public static class PARTICLE {
 
           public String PARTICLE;
           public double PROBABILITY;
         }
 
         @Create
-        public Mood MOOD;
+        public MOOD MOOD;
 
-        public static class Mood {
+        public static class MOOD {
 
           public String SOUND;
           public int TICK_DELAY;
@@ -59,18 +59,18 @@ public class BiomesConfig extends YamlConfig {
         }
 
         @Create
-        public Additions ADDITIONS;
+        public ADDITIONS ADDITIONS;
 
-        public static class Additions {
+        public static class ADDITIONS {
 
           public String SOUND;
           public double TICK_CHANCE;
         }
 
         @Create
-        public Music MUSIC;
+        public MUSIC MUSIC;
 
-        public static class Music {
+        public static class MUSIC {
 
           public String SOUND;
           public int MIN_DELAY;
@@ -80,6 +80,34 @@ public class BiomesConfig extends YamlConfig {
       }
     }
 
-    // TODO: mob spawning / biome generation
+    @Create
+    public MOB_SPAWN MOB_SPAWN;
+
+    public static class MOB_SPAWN {
+
+      public double CREATURE_GENERATION_PROBABILITY;
+
+      public List<SPAWNERS> SPAWNERS;
+
+      public static class SPAWNERS {
+
+        public String ENTITY_TYPE;
+        public String MOB_CATEGORY;
+        public int WEIGHT;
+        public int MIN_COUNT;
+        public int MAX_COUNT;
+      }
+
+      public List<SPAWN_COST> SPAWN_COST;
+
+      public static class SPAWN_COST {
+
+        public String ENTITY_TYPE;
+        public double ENERGY_BUDGET;
+        public double CHARGE;
+      }
+    }
+
+    // TODO: biome generation
   }
 }
