@@ -55,6 +55,7 @@ import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.MOB_SPAWN.SPAWN
 import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.MOB_SPAWN.SPAWNERS;
 import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.EFFECTS;
 import su.deltanw.core.config.BiomesConfig.SerializedCustomBiome.EFFECTS.AMBIENT;
+import su.deltanw.core.hook.worldedit.WorldEditHook;
 import su.deltanw.core.impl.util.UnsafeUtil;
 
 public record CustomBiome(NamespacedKey key, Biome biome) {
@@ -100,7 +101,9 @@ public record CustomBiome(NamespacedKey key, Biome biome) {
     BIOME_REGISTRY.put(namespacedKey, new CustomBiome(namespacedKey, nmsBiome));
 
     // Hook into WorldEdit
-    BiomeTypes.register(new BiomeType(biomeKey));
+    if (WorldEditHook.isPluginEnabled()) {
+      BiomeTypes.register(new BiomeType(biomeKey));
+    }
   }
 
   private static BiomeBuilder buildFromConfig(SerializedCustomBiome biome) {
