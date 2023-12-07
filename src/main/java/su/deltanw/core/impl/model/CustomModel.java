@@ -25,10 +25,12 @@ import org.bukkit.util.BlockVector;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import su.deltanw.core.api.model.DisplayMode;
+import su.deltanw.core.api.model.VirtualHitbox;
 
 import java.util.*;
 
-public record CustomModel(NamespacedKey key, DisplayMode displayMode, Vector3f scale, Vector3f translation, Vector2f rotation, List<BlockVector> hitboxes, ItemStack item) {
+public record CustomModel(NamespacedKey key, DisplayMode displayMode, Vector3f scale, Vector3f translation, Vector2f rotation,
+                          List<BlockVector> hitboxes, List<VirtualHitbox> virtualHitboxes, ItemStack item) {
 
   private static final Map<NamespacedKey, CustomModel> MODEL_REGISTRY = new HashMap<>();
 
@@ -39,6 +41,7 @@ public record CustomModel(NamespacedKey key, DisplayMode displayMode, Vector3f s
 
   public static NamespacedKey MODEL_PDC_KEY = Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_model"));
   public static NamespacedKey MODEL_PDC_EID_KEY = Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_model_eid"));
+  public static NamespacedKey MODEL_PDC_ROTATION_KEY = Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_model_rotation"));
   public static NamespacedKey MODEL_PDC_GROUP_KEY = Objects.requireNonNull(NamespacedKey.fromString("deltanw:custom_model_group"));
 
   static {
@@ -59,22 +62,22 @@ public record CustomModel(NamespacedKey key, DisplayMode displayMode, Vector3f s
     return MODEL_REGISTRY.get(key);
   }
 
-  public static CustomModel register(NamespacedKey key, DisplayMode displayMode, Vector3f scale, Vector3f translation, Vector2f rotation, List<BlockVector> hitboxes, ItemStack item) {
+  public static CustomModel register(NamespacedKey key, DisplayMode displayMode, Vector3f scale, Vector3f translation, Vector2f rotation, List<BlockVector> hitboxes, List<VirtualHitbox> virtualHitboxes, ItemStack item) {
     net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
     CompoundTag tag = nmsItem.getOrCreateTag();
     tag.putString("delta__custom_model", key.toString());
     tag.putString("delta__custom_item", key.toString());
     ItemStack craftItemMirror = CraftItemStack.asCraftMirror(nmsItem);
-    CustomModel model = new CustomModel(key, displayMode, scale, translation, rotation, hitboxes, craftItemMirror);
+    CustomModel model = new CustomModel(key, displayMode, scale, translation, rotation, hitboxes, virtualHitboxes, craftItemMirror);
     MODEL_REGISTRY.put(key, model);
     return model;
   }
 
-  public static CustomModel register(NamespacedKey key, DisplayMode displayMode, Vector3f scale, Vector3f translation, Vector2f rotation, List<BlockVector> hitboxes, String item) throws CommandSyntaxException {
+  public static CustomModel register(NamespacedKey key, DisplayMode displayMode, Vector3f scale, Vector3f translation, Vector2f rotation, List<BlockVector> hitboxes, List<VirtualHitbox> virtualHitboxes, String item) throws CommandSyntaxException {
     ItemParser.ItemResult itemResult = ItemParser.parseForItem(ITEM_HOLDER_LOOKUP, new StringReader(item));
     ItemInput itemInput = new ItemInput(itemResult.item(), itemResult.nbt());
     net.minecraft.world.item.ItemStack nmsItem = itemInput.createItemStack(1, false);
-    return register(key, displayMode, scale, translation, rotation, hitboxes, CraftItemStack.asCraftMirror(nmsItem));
+    return register(key, displayMode, scale, translation, rotation, hitboxes, virtualHitboxes, CraftItemStack.asCraftMirror(nmsItem));
   }
 
   public List<Packet<?>> createSpawnPackets(int entityId, BlockVector position, Vector3f translation, Vector2f rotation, Vector3f scale) {
@@ -96,8 +99,8 @@ public record CustomModel(NamespacedKey key, DisplayMode displayMode, Vector3f s
     );
   }
 
-  public List<Packet<?>> createSpawnPackets(int entityId, BlockVector position) {
-    return createSpawnPackets(entityId, position, new Vector3f(0, 0, 0), new Vector2f(0, 0), new Vector3f(1, 1, 1));
+  public List<Packet<?>> createSpawnPackets(int entityId, Vector2f rotation, BlockVector position) {
+    return createSpawnPackets(entityId, position, new Vector3f(0, 0, 0), rotation, new Vector3f(1, 1, 1));
   }
 
   public List<Packet<?>> createDestroyPackets(int entityId) {

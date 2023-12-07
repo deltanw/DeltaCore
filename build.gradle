@@ -73,7 +73,6 @@ javadoc {
   options.setEncoding("UTF-8")
   options.setCharSet("UTF-8")
   options.setSource("17")
-  options.links("https://docs.oracle.com/en/java/javase/11/docs/api/")
 
   options.addStringOption("Xdoclint:none", "-quiet")
 
