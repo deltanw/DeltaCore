@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -34,7 +35,6 @@ import org.bukkit.util.Vector;
 import org.joml.Vector2f;
 import su.deltanw.core.Core;
 import su.deltanw.core.api.model.VirtualHitbox;
-import su.deltanw.core.api.util.EntityUtil;
 import su.deltanw.core.impl.util.Vector2DataType;
 
 import java.util.*;
@@ -280,7 +280,7 @@ public class CustomModelListener implements Listener {
       }
     }
 
-    int entityId = EntityUtil.allocatePrivateEntityId(event.getPlayer().getWorld());
+    int entityId = Entity.nextEntityId();
 
     float modelRotationAngle = Math.round(event.getPlayer().getYaw() / 45.0F) * 45;
     Vector2f modelRotation = new Vector2f(modelRotationAngle, 0);
