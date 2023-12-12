@@ -5,17 +5,27 @@ import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
 import com.google.common.collect.Streams;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import net.elytrium.commons.config.Placeholders;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import su.deltanw.core.Core;
 import su.deltanw.core.api.Menu;
+import su.deltanw.core.api.entity.model.EntityModel;
+import su.deltanw.core.api.entity.model.animation.AnimationHandler;
 import su.deltanw.core.config.MessagesConfig;
+import su.deltanw.core.config.ModelsConfig;
 import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.commands.CommandSource;
+import su.deltanw.core.impl.entity.model.AbstractEntityModel;
+import su.deltanw.core.impl.entity.model.animation.AnimationHandlerImpl;
 import su.deltanw.core.impl.item.CustomItem;
 import su.deltanw.core.impl.model.CustomModel;
 
@@ -33,6 +43,8 @@ public class DevToolCommand extends BrigadierCommand {
     this.subCommand("blocks", blocks -> blocks.executes(this::openBlocks));
     this.subCommand("items", items -> items.executes(this::openItems));
     this.subCommand("models", models -> models.executes(this::openModels));
+
+    this.subCommand("entity", entity -> entity.executes(this::entityTest));
 
     this.subCommand("give", give -> {
       give.executes(context -> {
@@ -67,6 +79,30 @@ public class DevToolCommand extends BrigadierCommand {
     return this.openMenu(context.getSource(),
         new ModelsMenu(context.getSource().core(), CustomModel.getAll().stream().sorted(
                 Comparator.comparing(m -> m.key().asString())).toList(), 0));
+  }
+
+  public int entityTest(CommandContext<CommandSource> context) throws CommandSyntaxException {
+    Player player = context.getSource().toPlayerOrThrow();
+    AbstractEntityModel testModel = new AbstractEntityModel(context.getSource().core().getModelEngine()) {
+      @Override
+      public String getId() {
+        return "steve";
+      }
+
+      @Override
+      public void init(Location location) {
+        super.init(location.toVector().toLocation(location.getWorld()), 2.5F);
+      }
+    };
+
+    Collection<? extends Player> players = Bukkit.getOnlinePlayers();
+    players.forEach(testModel::addViewer);
+    testModel.init(player.getLocation());
+
+    AnimationHandler animationHandler = new AnimationHandlerImpl(testModel);
+    animationHandler.playRepeat("dab");
+
+    return players.size();
   }
 
   public int openMenu(CommandSource source, Menu menu) throws CommandSyntaxException {

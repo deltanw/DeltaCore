@@ -1,9 +1,13 @@
 package su.deltanw.core;
 
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.UUID;
+import java.util.*;
 
+import com.google.gson.JsonObject;
 import com.jeff_media.customblockdata.CustomBlockData;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.elytrium.commons.kyori.serialization.Serializer;
@@ -14,6 +18,8 @@ import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.query.QueryOptions;
+import net.minecraft.world.item.ItemStack;
+import org.apache.commons.io.FilenameUtils;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.util.Vector;
@@ -26,6 +32,7 @@ import su.deltanw.core.api.Menus;
 import su.deltanw.core.api.Placeholder;
 import su.deltanw.core.api.Placeholders;
 import su.deltanw.core.api.commands.BrigadierCommand;
+import su.deltanw.core.api.entity.model.ModelEngine;
 import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.api.model.VirtualHitbox;
 import su.deltanw.core.api.pack.*;
@@ -39,10 +46,8 @@ import su.deltanw.core.impl.PlaceholdersImpl;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import net.kyori.adventure.text.Component;
@@ -62,6 +67,12 @@ import su.deltanw.core.impl.block.CustomBlockListener;
 import su.deltanw.core.impl.block.CustomBlockNettyHandler;
 import su.deltanw.core.impl.commands.BrigadierListener;
 import su.deltanw.core.impl.commands.CommandManager;
+import su.deltanw.core.impl.entity.model.ModelEngineImpl;
+import su.deltanw.core.impl.entity.model.generator.BBEntityModel;
+import su.deltanw.core.impl.entity.model.generator.ModelGenerator;
+import su.deltanw.core.impl.entity.model.generator.TextureData;
+import su.deltanw.core.impl.entity.model.parser.ModelEngineFiles;
+import su.deltanw.core.impl.entity.model.parser.ModelParser;
 import su.deltanw.core.impl.injection.InjectorImpl;
 import su.deltanw.core.impl.item.CustomItem;
 import su.deltanw.core.impl.pack.PackBuilderImpl;
@@ -90,6 +101,8 @@ public final class Core extends JavaPlugin implements Listener {
   private Placeholders placeholders;
   private Injector injector;
   private Menus menus;
+
+  private ModelEngine<ItemStack> modelEngine;
 
   private ObservablePackBuilder<?> defaultPackBuilder;
   private CachingPackUploader defaultPackUploader;
@@ -189,8 +202,11 @@ public final class Core extends JavaPlugin implements Listener {
     this.defaultPackUploader = new PackUploaderImpl(getDataFolder().toPath().resolve("pack/dist"));
     this.defaultPackSender = new PackSenderImpl();
 
+    this.modelEngine = new ModelEngineImpl();
+
     loadPack();
 
+    loadEntityModels();
     loadCustomBlocks();
     loadCustomItems();
     loadCustomModels();
@@ -289,6 +305,99 @@ public final class Core extends JavaPlugin implements Listener {
 
     if (this.commandManager != null) {
       this.commandManager.deject();
+    }
+  }
+
+  public void loadEntityModels() {
+    try {
+      Path entityPath = getDataFolder().toPath().resolve("entity");
+      Path modelsPath = entityPath.resolve("models");
+      Files.createDirectories(modelsPath);
+      Path generatedModelsPath = entityPath.resolve("generated");
+      Files.createDirectories(generatedModelsPath);
+
+      Map<String, String> additionalStateFiles = new HashMap<>();
+      try (Stream<Path> paths = Files.walk(modelsPath, 1)) {
+        paths.filter(Files::isRegularFile)
+            .filter(path -> path.getFileName().toString().endsWith(".states"))
+            .forEach(path -> {
+              try {
+                String content = Files.readString(path);
+                String name = FilenameUtils.removeExtension(path.getFileName().toString());
+                additionalStateFiles.put(name, content);
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            });
+      }
+
+      Map<String, BBEntityModel> models;
+      try (Stream<Path> paths = Files.walk(modelsPath, 1)) {
+        models = paths.filter(Files::isRegularFile)
+            .filter(path -> path.getFileName().toString().endsWith(".bbmodel"))
+            .map(path -> {
+              try {
+                String content = Files.readString(path);
+                String name = FilenameUtils.removeExtension(path.getFileName().toString());
+                return ModelGenerator.generate(name, content, additionalStateFiles.get(name));
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            })
+            .collect(Collectors.toUnmodifiableMap(BBEntityModel::id, Function.identity()));
+      }
+
+      for (BBEntityModel model : models.values()) {
+        Path directory = generatedModelsPath.resolve(model.id());
+        Files.createDirectories(directory);
+        Files.writeString(directory.resolve("model.animation.json"), model.animations().toString(), StandardCharsets.UTF_8);
+        Files.writeString(directory.resolve("model.geo.json"), model.geo().toString(), StandardCharsets.UTF_8);
+      }
+
+      ModelParser parser = new ModelParser();
+      ModelEngineFiles files = parser.parse(models.values(), (path, content) ->
+          defaultPackBuilder.addText("assets/minecraft/models/custom/entities/" + path, content));
+
+      files.models().forEach(model -> {
+        Map<String, TextureData> textures = models.get(model.id()).textures();
+
+        for (var entry : model.textures().entrySet()) {
+          TextureData texture = textures.get(entry.getKey());
+          String path = "assets/minecraft/textures/custom/entities/" + model.id() + "/" + model.state().name() + "/" + entry.getKey();
+
+          int width = texture.width();
+          int height = texture.height();
+
+          double ratio = (double) height / width;
+          boolean canBeAnimated = (int) ratio == ratio;
+
+          if (texture.mcmeta() != null) {
+            defaultPackBuilder.addText(path + ".png.mcmeta", texture.mcmeta().toString());
+          } else if (canBeAnimated && ratio > 1) {
+            JsonObject animation = new JsonObject();
+            animation.addProperty("frametime", 2);
+
+            JsonObject object = new JsonObject();
+            object.add("animation", animation);
+
+            defaultPackBuilder.addText(path + ".png.mcmeta", object.toString());
+          }
+
+          defaultPackBuilder.addFile(path + ".png", entry.getValue());
+        }
+
+        for (var entry : model.bones().entrySet()) {
+          String path = "assets/minecraft/models/custom/entities/" + model.id() + "/" + model.state().name() + "/" + entry.getKey();
+          defaultPackBuilder.addText(path, entry.getValue().toString());
+        }
+      });
+
+      defaultPackBuilder.addText("assets/minecraft/models/item/leather_horse_armor.json", files.binding().toString());
+
+      Reader mappingReader = new StringReader(files.mappings().toString());
+      modelEngine.loadMappings(mappingReader, generatedModelsPath);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -397,6 +506,10 @@ public final class Core extends JavaPlugin implements Listener {
 
   public PackSender getDefaultPackSender() {
     return defaultPackSender;
+  }
+
+  public ModelEngine<ItemStack> getModelEngine() {
+    return modelEngine;
   }
 
   public Component getErrorComponent() {
