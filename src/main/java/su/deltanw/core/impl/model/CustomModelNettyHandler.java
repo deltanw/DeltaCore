@@ -16,7 +16,9 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector2f;
 import su.deltanw.core.Core;
+import su.deltanw.core.impl.util.Vector2DataType;
 
 import java.util.HashMap;
 import java.util.List;
@@ -74,9 +76,10 @@ public class CustomModelNettyHandler extends ChannelDuplexHandler {
         NamespacedKey modelKey = NamespacedKey.fromString(modelKeyString);
         CustomModel model = CustomModel.get(modelKey);
         int entityId = Objects.requireNonNull(blockData.get(CustomModel.MODEL_PDC_EID_KEY, PersistentDataType.INTEGER));
+        Vector2f rotation = Objects.requireNonNull(blockData.get(CustomModel.MODEL_PDC_ROTATION_KEY, Vector2DataType.INSTANCE));
         List<Packet<?>> packets;
         if (msg instanceof ClientboundLevelChunkWithLightPacket) {
-          packets = model.createSpawnPackets(entityId, block.getLocation().toVector().toBlockVector());
+          packets = model.createSpawnPackets(entityId, rotation, block.getLocation().toVector().toBlockVector());
         } else {
           packets = model.createDestroyPackets(entityId);
         }

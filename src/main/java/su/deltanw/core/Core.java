@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import com.jeff_media.customblockdata.CustomBlockData;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.elytrium.commons.config.YamlConfig.LoadResult;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.commons.kyori.serialization.Serializers;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
@@ -17,6 +16,7 @@ import net.luckperms.api.node.Node;
 import net.luckperms.api.query.QueryOptions;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.bukkit.util.BlockVector;
 import org.joml.Vector2f;
@@ -27,6 +27,7 @@ import su.deltanw.core.api.Placeholder;
 import su.deltanw.core.api.Placeholders;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.injection.Injector;
+import su.deltanw.core.api.model.VirtualHitbox;
 import su.deltanw.core.api.pack.*;
 import su.deltanw.core.config.*;
 import su.deltanw.core.devapi.NettyHttpServer;
@@ -353,6 +354,10 @@ public final class Core extends JavaPlugin implements Listener {
             new Vector3f((float) value.TRANSLATION.X, (float) value.TRANSLATION.Y, (float) value.TRANSLATION.Z),
             new Vector2f((float) value.ROTATION.X, (float) value.ROTATION.Y),
             value.HITBOXES.stream().map(hitbox -> new BlockVector(hitbox.X, hitbox.Y, hitbox.Z)).toList(),
+            value.VIRTUAL_HITBOXES.stream().map(v -> new VirtualHitbox(
+                    new Vector(v.OFFSET_X, v.OFFSET_Y, v.OFFSET_Z),
+                    new Vector(v.SIZE_X, v.SIZE_Y, v.SIZE_Z))
+            ).toList(),
             value.MODEL_ITEM);
       } catch (CommandSyntaxException e) {
         throw new IllegalArgumentException(e);

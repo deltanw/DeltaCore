@@ -45,6 +45,19 @@ public class ModelsConfig extends YamlConfig {
       public double X;
       public double Y;
     }
+
+    public List<SerializedVirtualHitbox> VIRTUAL_HITBOXES = List.of();
+
+    public static class SerializedVirtualHitbox {
+
+      public double OFFSET_X;
+      public double OFFSET_Y;
+      public double OFFSET_Z;
+      public double SIZE_X;
+      public double SIZE_Y;
+      public double SIZE_Z;
+    }
+
     public List<HitboxVector> HITBOXES;
 
     public static class HitboxVector {

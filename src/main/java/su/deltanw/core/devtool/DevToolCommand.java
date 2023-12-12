@@ -5,6 +5,7 @@ import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
 import com.google.common.collect.Streams;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.Comparator;
 import java.util.List;
 import net.elytrium.commons.config.Placeholders;
 import org.bukkit.NamespacedKey;
@@ -64,7 +65,8 @@ public class DevToolCommand extends BrigadierCommand {
 
   public int openModels(CommandContext<CommandSource> context) throws CommandSyntaxException {
     return this.openMenu(context.getSource(),
-        new ModelsMenu(context.getSource().core(), CustomModel.getAll(), 0));
+        new ModelsMenu(context.getSource().core(), CustomModel.getAll().stream().sorted(
+                Comparator.comparing(m -> m.key().asString())).toList(), 0));
   }
 
   public int openMenu(CommandSource source, Menu menu) throws CommandSyntaxException {
