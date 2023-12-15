@@ -28,6 +28,20 @@ public class BoneEntity {
     this.model = model;
   }
 
+  private List<Pair<EquipmentSlot, ItemStack>> getEquipment(LivingEntity living) {
+    List<Pair<EquipmentSlot, ItemStack>> list = new ArrayList<>();
+    EquipmentSlot[] equipmentSlots = EquipmentSlot.values();
+
+    for (EquipmentSlot equipmentSlot : equipmentSlots) {
+      ItemStack item = living.getItemBySlot(equipmentSlot);
+      if (!item.isEmpty()) {
+        list.add(Pair.of(equipmentSlot, item));
+      }
+    }
+
+    return list;
+  }
+
   private List<Packet<?>> createSpawnPackets() {
     List<Packet<?>> packets = new ArrayList<>(4);
     packets.add(new ClientboundAddEntityPacket(entity));
@@ -37,15 +51,7 @@ public class BoneEntity {
     }
     if ((entity.getType() == EntityType.ZOMBIE || entity.getType() == EntityType.ARMOR_STAND)
         && entity instanceof LivingEntity living) {
-      List<Pair<EquipmentSlot, ItemStack>> list = new ArrayList<>();
-      EquipmentSlot[] equipmentSlots = EquipmentSlot.values();
-
-      for (EquipmentSlot equipmentSlot : equipmentSlots) {
-        ItemStack item = living.getItemBySlot(equipmentSlot);
-        if (!item.isEmpty()) {
-          list.add(Pair.of(equipmentSlot, item));
-        }
-      }
+      List<Pair<EquipmentSlot, ItemStack>> list = getEquipment(living);
 
       if (!list.isEmpty()) {
         packets.add(new ClientboundSetEquipmentPacket(entity.getId(), list));
@@ -76,6 +82,28 @@ public class BoneEntity {
   public void spawn(Player player) {
     List<Packet<?>> packets = createSpawnPackets();
     spawn(player, packets);
+  }
+
+  public void updateMeta() {
+    List<SynchedEntityData.DataValue<?>> data = entity.getEntityData().packDirty();
+    if (data == null || data.isEmpty()) {
+      return;
+    }
+    Packet<?> packet = new ClientboundSetEntityDataPacket(entity.getId(), data);
+    model.getViewers().forEach(player -> ((CraftPlayer) player).getHandle().connection.send(packet));
+  }
+
+  public void updateEquipment() {
+    if (!(entity instanceof LivingEntity living)) {
+      return;
+    }
+
+    List<Pair<EquipmentSlot, ItemStack>> list = getEquipment(living);
+
+    if (!list.isEmpty()) {
+      Packet<?> packet = new ClientboundSetEquipmentPacket(entity.getId(), list);
+      model.getViewers().forEach(player -> ((CraftPlayer) player).getHandle().connection.send(packet));
+    }
   }
 
   public void remove() {

@@ -2,14 +2,12 @@ package su.deltanw.core.impl.entity.model.bone;
 
 import com.google.common.collect.ImmutableList;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Display;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -56,21 +54,12 @@ public class DisplayEntityModelBone extends AbstractModelBone implements ModelBo
     }
   }
 
-  protected void updateMeta(Entity entity) {
-    List<SynchedEntityData.DataValue<?>> data = entity.getEntityData().packDirty();
-    if (data == null || data.isEmpty()) {
-      return;
-    }
-    Packet<?> packet = new ClientboundSetEntityDataPacket(entity.getId(), data);
-    model.getViewers().forEach(player -> ((CraftPlayer) player).getHandle().connection.send(packet));
-  }
-
   @Override
   public void setScale(float scale) {
     super.setScale(scale);
     if (entity != null) {
       entity.getEntity().getEntityData().set(SCALE, new Vector3f(scale));
-      updateMeta(entity.getEntity());
+      entity.updateMeta();
     }
   }
 
@@ -128,7 +117,7 @@ public class DisplayEntityModelBone extends AbstractModelBone implements ModelBo
       data.set(TRANSLATION, position.toVector3f());
       if (data.isDirty()) {
         ((Display.ItemDisplay) entity.getEntity()).setInterpolationDelay(0);
-        updateMeta(entity.getEntity());
+        entity.updateMeta();
       }
     }
 
@@ -169,14 +158,14 @@ public class DisplayEntityModelBone extends AbstractModelBone implements ModelBo
     if (entity != null && entity.getEntity().getType() == EntityType.ITEM_DISPLAY) {
       if (state.equals("invisible")) {
         ((Display.ItemDisplay) entity.getEntity()).setItemStack(ItemStack.EMPTY);
-        updateMeta(entity.getEntity());
+        entity.updateMeta();
         return;
       }
 
       ItemStack item = items.get(state);
       if (item != null) {
         ((Display.ItemDisplay) entity.getEntity()).setItemStack(item);
-        updateMeta(entity.getEntity());
+        entity.updateMeta();
       }
     }
   }

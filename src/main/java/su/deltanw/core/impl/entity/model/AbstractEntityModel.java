@@ -113,7 +113,11 @@ public abstract class AbstractEntityModel implements EntityModel {
         modelBonePart = new DisplayEntityModelBoneHead(world, pivotPos, name, boneRotation, this, scale);
         head = (ModelBoneHead) modelBonePart;
       } else {
-        modelBonePart = new DisplayEntityModelBone(world, pivotPos, name, boneRotation, this, scale);
+        if (this instanceof PlayerModel) {
+          modelBonePart = new ArmorStandModelBone(world, pivotPos, name, boneRotation, this, scale);
+        } else {
+          modelBonePart = new DisplayEntityModelBone(world, pivotPos, name, boneRotation, this, scale);
+        }
       }
 
       if (modelBonePart != null) {
