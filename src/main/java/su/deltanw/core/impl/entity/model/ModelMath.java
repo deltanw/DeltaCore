@@ -50,9 +50,9 @@ public class ModelMath {
     double cosZ = Math.cos(rZ);
     double sinZ = Math.sin(rZ);
 
-    Matrix3d rmatX = new Matrix3d(1, 0, 0, 0, cosX, -sinX, 0, sinX, cosX);
-    Matrix3d rmatY = new Matrix3d(cosY, 0, sinY, 0, 1, 0, -sinY, 0, cosY);
-    Matrix3d rmatZ = new Matrix3d(cosZ, -sinZ, 0, sinZ, cosZ, 0, 0, 0, 1);
+    Matrix3d rmatX = new Matrix3d(1, 0, 0, 0, cosX, sinX, 0, -sinX, cosX);
+    Matrix3d rmatY = new Matrix3d(cosY, 0, -sinY, 0, 1, 0, sinY, 0, cosY);
+    Matrix3d rmatZ = new Matrix3d(cosZ, sinZ, 0, -sinZ, cosZ, 0, 0, 0, 1);
 
     return Vector.fromJOML(v.toVector3d().mul(rmatZ.mul(rmatY).mul(rmatX)));
   }

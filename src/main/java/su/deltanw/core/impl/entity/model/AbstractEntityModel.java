@@ -48,7 +48,7 @@ public abstract class AbstractEntityModel implements EntityModel {
 
   @Override
   public Location getPosition() {
-    return position;
+    return position.clone();
   }
 
   @Override
@@ -61,10 +61,10 @@ public abstract class AbstractEntityModel implements EntityModel {
   }
 
   public void init(Location location, float scale) {
-    this.position = location;
+    this.position = location.toVector().toLocation(location.getWorld());
 
     JsonObject loadedModel = modelEngine.getModelLoader().loadModel(getId());
-    setGlobalRotation(position.getYaw());
+    setGlobalRotation(location.getYaw());
 
     loadBones(location.getWorld(), loadedModel, scale);
 
@@ -196,6 +196,12 @@ public abstract class AbstractEntityModel implements EntityModel {
 
   @Override
   public void setGlobalRotation(double globalRotation) {
+    globalRotation %= 360;
+    if (globalRotation < -180.F) {
+      globalRotation += 360.F;
+    } else if (globalRotation > 180.F) {
+      globalRotation -= 360.F;
+    }
     this.globalRotation = globalRotation;
   }
 
@@ -254,7 +260,7 @@ public abstract class AbstractEntityModel implements EntityModel {
     }
 
     viewableBones.clear();
-    hittableBones.clear();;
+    hittableBones.clear();
     vfxBones.clear();
     parts.clear();
   }
