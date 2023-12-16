@@ -6,8 +6,8 @@ import su.deltanw.core.api.entity.model.ModelLoader;
 import su.deltanw.core.api.entity.model.factory.EntityModelFactory;
 import su.deltanw.core.api.entity.model.factory.ModelEngineFactory;
 import su.deltanw.core.impl.entity.model.AbstractEntityModel;
-import su.deltanw.core.impl.entity.model.ModelEngineImpl;
-import su.deltanw.core.impl.entity.model.PlayerModelImpl;
+import su.deltanw.core.impl.entity.model.DefaultModelEngine;
+import su.deltanw.core.impl.entity.model.concrete.PlayerModelImpl;
 
 import java.util.function.Function;
 
@@ -15,17 +15,17 @@ public class ModelEngineFactoryImpl implements ModelEngineFactory<ItemStack> {
 
   @Override
   public ModelEngine<ItemStack> createModelEngine() {
-    return new ModelEngineImpl();
+    return new DefaultModelEngine();
   }
 
   @Override
   public ModelEngine<ItemStack> createModelEngine(ModelLoader loader) {
-    return new ModelEngineImpl(loader);
+    return new DefaultModelEngine(loader);
   }
 
   @Override
   public ModelEngine<ItemStack> createModelEngine(Function<ModelEngine<ItemStack>, ModelLoader> loaderConstructor) {
-    return new ModelEngineImpl(loaderConstructor);
+    return new DefaultModelEngine(loaderConstructor);
   }
 
   @Override

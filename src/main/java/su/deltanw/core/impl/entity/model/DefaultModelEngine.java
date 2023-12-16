@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class ModelEngineImpl implements ModelEngine<ItemStack> {
+public class DefaultModelEngine implements ModelEngine<ItemStack> {
 
   private static final Gson GSON =
       new GsonBuilder()
@@ -32,16 +32,16 @@ public class ModelEngineImpl implements ModelEngine<ItemStack> {
   private final ModelLoader modelLoader;
   private Path modelPath;
 
-  public ModelEngineImpl(ModelLoader modelLoader) {
+  public DefaultModelEngine(ModelLoader modelLoader) {
     this.modelLoader = modelLoader;
   }
 
-  public ModelEngineImpl(Function<ModelEngine<ItemStack>, ModelLoader> modelLoaderConstructor) {
+  public DefaultModelEngine(Function<ModelEngine<ItemStack>, ModelLoader> modelLoaderConstructor) {
     this.modelLoader = modelLoaderConstructor.apply(this);
   }
 
-  public ModelEngineImpl() {
-    this.modelLoader = new ModelLoaderImpl(this);
+  public DefaultModelEngine() {
+    this.modelLoader = new DefaultModelLoader(this);
   }
 
   private static ItemStack generateBoneItem(int modelId) {

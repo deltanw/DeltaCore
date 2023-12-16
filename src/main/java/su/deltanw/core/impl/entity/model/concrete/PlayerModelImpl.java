@@ -1,4 +1,4 @@
-package su.deltanw.core.impl.entity.model;
+package su.deltanw.core.impl.entity.model.concrete;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.gson.Gson;
@@ -16,6 +16,7 @@ import org.bukkit.util.Vector;
 import su.deltanw.core.api.entity.model.ModelEngine;
 import su.deltanw.core.api.entity.model.PlayerModel;
 import su.deltanw.core.api.entity.model.bone.ModelBone;
+import su.deltanw.core.impl.entity.model.AbstractEntityModel;
 import su.deltanw.core.impl.entity.model.bone.BoneEntity;
 
 import java.io.FileNotFoundException;

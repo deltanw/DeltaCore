@@ -1,7 +1,8 @@
-package su.deltanw.core.impl.entity.model;
+package su.deltanw.core.impl.entity.model.concrete;
 
 import net.minecraft.world.item.ItemStack;
 import su.deltanw.core.api.entity.model.ModelEngine;
+import su.deltanw.core.impl.entity.model.AbstractEntityModel;
 
 public class SimpleEntityModel extends AbstractEntityModel {
 

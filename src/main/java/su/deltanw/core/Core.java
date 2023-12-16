@@ -71,7 +71,7 @@ import su.deltanw.core.impl.block.CustomBlockNettyHandler;
 import su.deltanw.core.impl.commands.BrigadierListener;
 import su.deltanw.core.impl.commands.CommandManager;
 import su.deltanw.core.impl.entity.model.AbstractEntityModel;
-import su.deltanw.core.impl.entity.model.PlayerModelImpl;
+import su.deltanw.core.impl.entity.model.concrete.PlayerModelImpl;
 import su.deltanw.core.impl.entity.model.animation.AnimationHandlerImpl;
 import su.deltanw.core.impl.entity.model.factory.AnimationHandlerFactoryImpl;
 import su.deltanw.core.impl.entity.model.factory.ModelEngineFactoryImpl;

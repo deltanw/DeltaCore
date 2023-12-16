@@ -7,8 +7,8 @@ import org.bukkit.entity.Player;
 import su.deltanw.core.api.entity.model.ModelEngine;
 import su.deltanw.core.api.entity.model.factory.EntityModelFactory;
 import su.deltanw.core.impl.entity.model.AbstractEntityModel;
-import su.deltanw.core.impl.entity.model.PlayerModelImpl;
-import su.deltanw.core.impl.entity.model.SimpleEntityModel;
+import su.deltanw.core.impl.entity.model.concrete.PlayerModelImpl;
+import su.deltanw.core.impl.entity.model.concrete.SimpleEntityModel;
 
 public record EntityModelFactoryImpl(ModelEngine<ItemStack> modelEngine) implements EntityModelFactory<AbstractEntityModel, PlayerModelImpl> {
 

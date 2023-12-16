@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ModelLoaderImpl implements ModelLoader {
+public class DefaultModelLoader implements ModelLoader {
 
   private static final Gson GSON =
       new GsonBuilder()
@@ -30,7 +30,7 @@ public class ModelLoaderImpl implements ModelLoader {
   private final Map<String, Map<String, Map<Short, Vector>>> interpolationRotateCache = new HashMap<>();
   private final ModelEngine<?> modelEngine;
 
-  public ModelLoaderImpl(ModelEngine<?> modelEngine) {
+  public DefaultModelLoader(ModelEngine<?> modelEngine) {
     this.modelEngine = modelEngine;
   }
 
