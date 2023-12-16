@@ -138,9 +138,6 @@ public class PlayerModel extends AbstractEntityModel {
       }
 
       living.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
-      if (i == 0) {
-        living.setItemInHand(InteractionHand.OFF_HAND, itemStack);
-      }
       boneEntity.updateEquipment();
     }
   }
