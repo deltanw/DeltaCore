@@ -33,6 +33,8 @@ import su.deltanw.core.api.Placeholder;
 import su.deltanw.core.api.Placeholders;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.entity.model.ModelEngine;
+import su.deltanw.core.api.entity.model.factory.EntityModelFactory;
+import su.deltanw.core.api.entity.model.factory.ModelEngineFactory;
 import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.api.model.VirtualHitbox;
 import su.deltanw.core.api.pack.*;
@@ -67,7 +69,9 @@ import su.deltanw.core.impl.block.CustomBlockListener;
 import su.deltanw.core.impl.block.CustomBlockNettyHandler;
 import su.deltanw.core.impl.commands.BrigadierListener;
 import su.deltanw.core.impl.commands.CommandManager;
-import su.deltanw.core.impl.entity.model.ModelEngineImpl;
+import su.deltanw.core.impl.entity.model.AbstractEntityModel;
+import su.deltanw.core.impl.entity.model.PlayerModelImpl;
+import su.deltanw.core.impl.entity.model.factory.ModelEngineFactoryImpl;
 import su.deltanw.core.impl.entity.model.generator.BBEntityModel;
 import su.deltanw.core.impl.entity.model.generator.ModelGenerator;
 import su.deltanw.core.impl.entity.model.generator.TextureData;
@@ -102,7 +106,9 @@ public final class Core extends JavaPlugin implements Listener {
   private Injector injector;
   private Menus menus;
 
-  private ModelEngine<ItemStack> modelEngine;
+  private ModelEngineFactory<ItemStack> modelEngineFactory;
+  private EntityModelFactory<AbstractEntityModel, PlayerModelImpl> entityModelFactory;
+  private ModelEngine<ItemStack> defaultModelEngine;
 
   private ObservablePackBuilder<?> defaultPackBuilder;
   private CachingPackUploader defaultPackUploader;
@@ -202,11 +208,13 @@ public final class Core extends JavaPlugin implements Listener {
     this.defaultPackUploader = new PackUploaderImpl(getDataFolder().toPath().resolve("pack/dist"));
     this.defaultPackSender = new PackSenderImpl();
 
-    this.modelEngine = new ModelEngineImpl();
+    ModelEngineFactoryImpl modelEngineFactory = new ModelEngineFactoryImpl();
+    this.modelEngineFactory = modelEngineFactory;
+    this.defaultModelEngine = modelEngineFactory.createModelEngine();
+    this.entityModelFactory = modelEngineFactory.createModelFactory(this.defaultModelEngine);
 
     loadPack();
 
-    loadEntityModels();
     loadCustomBlocks();
     loadCustomItems();
     loadCustomModels();
@@ -395,7 +403,7 @@ public final class Core extends JavaPlugin implements Listener {
       defaultPackBuilder.addText("assets/minecraft/models/item/leather_horse_armor.json", files.binding().toString());
 
       Reader mappingReader = new StringReader(files.mappings().toString());
-      modelEngine.loadMappings(mappingReader, generatedModelsPath);
+      defaultModelEngine.loadMappings(mappingReader, generatedModelsPath);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -417,6 +425,8 @@ public final class Core extends JavaPlugin implements Listener {
               }
             });
       }
+
+      loadEntityModels();
     } catch (IOException e) {
       throw new RuntimeException("Couldn't load static pack files.", e);
     }
@@ -508,8 +518,18 @@ public final class Core extends JavaPlugin implements Listener {
     return defaultPackSender;
   }
 
-  public ModelEngine<ItemStack> getModelEngine() {
-    return modelEngine;
+  // TODO: Create generic interface to avoid type erasure.
+
+  public ModelEngineFactory<?> getModelEngineFactory() {
+    return modelEngineFactory;
+  }
+
+  public EntityModelFactory<?, ?> getEntityModelFactory() {
+    return entityModelFactory;
+  }
+
+  public ModelEngine<ItemStack> getDefaultModelEngine() {
+    return defaultModelEngine;
   }
 
   public Component getErrorComponent() {

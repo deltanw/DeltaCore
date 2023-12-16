@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import su.deltanw.core.api.entity.model.EntityModel;
 import su.deltanw.core.api.entity.model.ModelEngine;
+import su.deltanw.core.api.entity.model.PlayerModel;
 import su.deltanw.core.api.entity.model.animation.AnimationDirection;
 import su.deltanw.core.api.entity.model.bone.ModelBone;
 import su.deltanw.core.api.entity.model.bone.ModelBoneHead;
@@ -56,6 +57,7 @@ public abstract class AbstractEntityModel implements EntityModel {
     Bukkit.getPluginManager().callEvent(new AnimationCompleteEvent(this, animation, direction));
   }
 
+  @Override
   public void spawn(Location location, float scale) {
     this.position = location.toVector().toLocation(location.getWorld());
 

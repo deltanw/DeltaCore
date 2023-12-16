@@ -14,6 +14,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.profile.PlayerTextures;
 import org.bukkit.util.Vector;
 import su.deltanw.core.api.entity.model.ModelEngine;
+import su.deltanw.core.api.entity.model.PlayerModel;
 import su.deltanw.core.api.entity.model.bone.ModelBone;
 import su.deltanw.core.impl.entity.model.bone.BoneEntity;
 
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class PlayerModel extends AbstractEntityModel {
+public class PlayerModelImpl extends AbstractEntityModel implements PlayerModel {
 
   protected static final Gson GSON =
       new GsonBuilder()
@@ -73,7 +74,7 @@ public class PlayerModel extends AbstractEntityModel {
   private static final JsonObject MODEL_DATA_SLIM;
 
   private static JsonObject loadModelData(String path) throws IOException {
-    try (InputStream stream = PlayerModel.class.getResourceAsStream(path)) {
+    try (InputStream stream = PlayerModelImpl.class.getResourceAsStream(path)) {
       if (stream == null) {
         throw new FileNotFoundException();
       }
@@ -94,7 +95,7 @@ public class PlayerModel extends AbstractEntityModel {
   private final PlayerProfile profile;
   private final boolean isSlim;
 
-  public PlayerModel(ModelEngine<ItemStack> modelEngine, PlayerProfile profile) {
+  public PlayerModelImpl(ModelEngine<ItemStack> modelEngine, PlayerProfile profile) {
     super(modelEngine);
     this.profile = profile;
     this.isSlim = profile.getTextures().getSkinModel() == PlayerTextures.SkinModel.SLIM;
@@ -154,5 +155,10 @@ public class PlayerModel extends AbstractEntityModel {
   @Override
   public Vector getOffset(String bone) {
     return (isSlim ? BONE_OFFSETS_SLIM : BONE_OFFSETS).get(bone);
+  }
+
+  @Override
+  public PlayerProfile getProfile() {
+    return profile;
   }
 }

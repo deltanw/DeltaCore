@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class ModelEngineImpl implements ModelEngine<ItemStack> {
 
@@ -33,6 +34,10 @@ public class ModelEngineImpl implements ModelEngine<ItemStack> {
 
   public ModelEngineImpl(ModelLoader modelLoader) {
     this.modelLoader = modelLoader;
+  }
+
+  public ModelEngineImpl(Function<ModelEngine<ItemStack>, ModelLoader> modelLoaderConstructor) {
+    this.modelLoader = modelLoaderConstructor.apply(this);
   }
 
   public ModelEngineImpl() {

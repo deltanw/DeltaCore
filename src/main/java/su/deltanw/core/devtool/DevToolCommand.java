@@ -16,12 +16,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import su.deltanw.core.Core;
 import su.deltanw.core.api.Menu;
-import su.deltanw.core.api.entity.model.EntityModel;
+import su.deltanw.core.api.entity.model.PlayerModel;
 import su.deltanw.core.config.MessagesConfig;
 import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.commands.CommandSource;
-import su.deltanw.core.impl.entity.model.PlayerModel;
 import su.deltanw.core.impl.item.CustomItem;
 import su.deltanw.core.impl.model.CustomModel;
 
@@ -80,7 +79,7 @@ public class DevToolCommand extends BrigadierCommand {
   public int entityTest(CommandContext<CommandSource> context) throws CommandSyntaxException {
     Player player = context.getSource().toPlayerOrThrow();
 
-    EntityModel model = new PlayerModel(context.getSource().core().getModelEngine(), player.getPlayerProfile());
+    PlayerModel model = context.getSource().core().getEntityModelFactory().createPlayerModel(player);
 
     Collection<? extends Player> players = Bukkit.getOnlinePlayers();
     players.forEach(model::addViewer);
