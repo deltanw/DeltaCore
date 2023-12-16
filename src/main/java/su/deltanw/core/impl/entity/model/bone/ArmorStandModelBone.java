@@ -13,6 +13,8 @@ import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.util.Vector;
 import org.joml.Quaterniond;
 import su.deltanw.core.api.entity.model.EntityModel;
+import su.deltanw.core.api.entity.model.animation.AnimationType;
+import su.deltanw.core.api.entity.model.animation.ModelAnimation;
 import su.deltanw.core.api.entity.model.bone.ModelBone;
 import su.deltanw.core.api.entity.model.bone.ModelBoneViewable;
 import su.deltanw.core.impl.entity.model.ModelMath;
@@ -49,6 +51,31 @@ public class ArmorStandModelBone extends AbstractModelBone implements ModelBoneV
   }
 
   @Override
+  public Vector applyTransform(Vector v) {
+    Vector endPos = v.clone();
+    if (diff != null) {
+      endPos = calculateRotation(endPos, getPropogatedRotation(), pivot.clone().subtract(diff));
+    } else {
+      endPos = calculateRotation(endPos, getPropogatedRotation(), pivot);
+    }
+
+    for (ModelAnimation currentAnimation : animations) {
+      if (currentAnimation != null && currentAnimation.isPlaying()) {
+        if (currentAnimation.getType() == AnimationType.TRANSLATION) {
+          var calculatedTransform = currentAnimation.getTransform();
+          endPos.add(calculatedTransform.multiply(3.9936));
+        }
+      }
+    }
+
+    if (parent != null) {
+      endPos = parent.applyTransform(endPos);
+    }
+
+    return endPos;
+  }
+
+  @Override
   public Location calculatePosition() {
     if (offset == null) {
       return new Location(world, 0, 0, 0);
@@ -57,8 +84,7 @@ public class ArmorStandModelBone extends AbstractModelBone implements ModelBoneV
     Vector p = applyTransform(offset);
     p = calculateGlobalRotation(p);
 
-    return p.multiply(0.15625)
-        .multiply(1.0 / 0.624)
+    return p.multiply(1.0 / 3.9936)
         .subtract(NORMAL_SUB)
         .multiply(scale)
         .toLocation(world)
