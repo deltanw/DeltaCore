@@ -92,13 +92,12 @@ public class PlayerModelImpl extends AbstractEntityModel implements PlayerModel 
   }
 
   private final List<ModelBone> bones = new ArrayList<>();
-  private final PlayerProfile profile;
-  private final boolean isSlim;
+  private PlayerProfile profile;
+  private boolean isSlim;
 
   public PlayerModelImpl(ModelEngine<ItemStack> modelEngine, PlayerProfile profile) {
     super(modelEngine);
-    this.profile = profile;
-    this.isSlim = profile.getTextures().getSkinModel() == PlayerTextures.SkinModel.SLIM;
+    setProfile(profile, false);
   }
 
   @Override
@@ -125,6 +124,10 @@ public class PlayerModelImpl extends AbstractEntityModel implements PlayerModel 
     display();
     display();
 
+    updateProfile();
+  }
+
+  protected void updateProfile() {
     for (int i = 0; i < ORDER.length; ++i) {
       var item = new org.bukkit.inventory.ItemStack(Material.PLAYER_HEAD);
       SkullMeta meta = (SkullMeta) item.getItemMeta();
@@ -160,5 +163,18 @@ public class PlayerModelImpl extends AbstractEntityModel implements PlayerModel 
   @Override
   public PlayerProfile getProfile() {
     return profile;
+  }
+
+  protected void setProfile(PlayerProfile profile, boolean updateProfile) {
+    this.profile = profile;
+    this.isSlim = profile.getTextures().getSkinModel() == PlayerTextures.SkinModel.SLIM;
+    if (updateProfile) {
+      updateProfile();
+    }
+  }
+
+  @Override
+  public void setProfile(PlayerProfile profile) {
+    setProfile(profile, true);
   }
 }

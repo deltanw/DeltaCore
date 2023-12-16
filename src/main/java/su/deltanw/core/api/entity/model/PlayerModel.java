@@ -6,6 +6,5 @@ public interface PlayerModel extends EntityModel {
 
   PlayerProfile getProfile();
 
-  // TODO
-  // void setProfile(PlayerProfile profile);
+  void setProfile(PlayerProfile profile);
 }
