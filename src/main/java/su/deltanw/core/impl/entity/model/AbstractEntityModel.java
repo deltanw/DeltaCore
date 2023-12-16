@@ -258,7 +258,9 @@ public abstract class AbstractEntityModel implements EntityModel {
   @Override
   public void destroy() {
     for (ModelBone modelBone : parts.values()) {
-      modelBone.destroy();
+      if (modelBone.getParent() == null) {
+        modelBone.destroy();
+      }
     }
 
     viewableBones.clear();
