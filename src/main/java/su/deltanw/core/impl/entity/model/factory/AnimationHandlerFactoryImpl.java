@@ -10,4 +10,14 @@ public class AnimationHandlerFactoryImpl implements AnimationHandlerFactory<Anim
   public AnimationHandlerImpl createAnimationHandler(EntityModel model) {
     return new AnimationHandlerImpl(model);
   }
+
+  @Override
+  public AnimationHandlerImpl createAnimationHandlerWithoutDefaults(EntityModel model) {
+    return new AnimationHandlerImpl(model) {
+
+      @Override
+      protected void loadDefaultAnimations() {
+      }
+    };
+  }
 }

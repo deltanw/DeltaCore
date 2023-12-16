@@ -6,4 +6,6 @@ import su.deltanw.core.api.entity.model.animation.AnimationHandler;
 public interface AnimationHandlerFactory<T extends AnimationHandler> {
 
   T createAnimationHandler(EntityModel model);
+
+  T createAnimationHandlerWithoutDefaults(EntityModel model);
 }

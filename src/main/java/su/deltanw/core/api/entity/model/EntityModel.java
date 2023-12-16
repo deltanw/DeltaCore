@@ -1,12 +1,12 @@
 package su.deltanw.core.api.entity.model;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import su.deltanw.core.api.entity.model.animation.AnimationDirection;
 import su.deltanw.core.api.entity.model.bone.ModelBone;
-import su.deltanw.core.impl.entity.model.bone.BoneEntity;
 
 import java.util.List;
 import java.util.Set;
@@ -22,6 +22,8 @@ public interface EntityModel {
   void setGlobalRotation(double rotation);
 
   Vector getGlobalOffset();
+
+  Location getTrackingPosition();
 
   Location getPosition();
 
@@ -53,9 +55,11 @@ public interface EntityModel {
 
   Vector getBoneAtTime(String animation, String bone, int time);
 
-  void setNameTagEntity(BoneEntity entity);
+  void setNameTag(Component nameTag);
 
-  BoneEntity getNameTagEntity();
+  Component getNameTag();
+
+  <E> E getNameTagBone();
 
   Vector getOffset(String bone);
 

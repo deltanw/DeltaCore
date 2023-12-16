@@ -1,13 +1,14 @@
 package su.deltanw.core.impl.entity.model.bone;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.util.Vector;
 import su.deltanw.core.api.entity.model.EntityModel;
 import su.deltanw.core.api.entity.model.bone.ModelBone;
 
 public class ModelBoneVFX extends AbstractModelBone {
 
-  private Location position = new Location(null, 0, 0, 0);
+  private Location position = null;
 
   public ModelBoneVFX(Vector pivot, String name, Vector rotation, EntityModel model, float scale) {
     super(pivot, name, rotation, model, scale);
@@ -15,7 +16,11 @@ public class ModelBoneVFX extends AbstractModelBone {
   }
 
   public Location getPosition() {
-    return position;
+    if (position == null) {
+      return new Location(model.getPosition().getWorld(), 0, 0, 0);
+    } else {
+      return position;
+    }
   }
 
   @Override
@@ -33,8 +38,9 @@ public class ModelBoneVFX extends AbstractModelBone {
 
   @Override
   public Location calculatePosition() {
+    World world = model.getPosition().getWorld();
     if (offset == null) {
-      return new Location(null, 0, 0, 0);
+      return new Location(world, 0, 0, 0);
     }
 
     Vector p = offset.clone();
@@ -43,7 +49,7 @@ public class ModelBoneVFX extends AbstractModelBone {
 
     return p.multiply(0.25)
         .multiply(scale)
-        .toLocation(position.getWorld())
+        .toLocation(world)
         .add(model.getPosition());
   }
 

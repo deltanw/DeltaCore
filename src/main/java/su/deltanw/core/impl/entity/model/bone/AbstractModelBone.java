@@ -21,6 +21,7 @@ public abstract class AbstractModelBone implements ModelBone {
   protected final Map<String, ItemStack> items;
 
   protected final EntityModel model;
+  private final Vector originalPivot;
   protected final Vector diff;
   protected final Vector pivot;
   protected final String name;
@@ -36,6 +37,7 @@ public abstract class AbstractModelBone implements ModelBone {
     this.model = model;
     this.diff = model.getDiff(name);
     this.offset = model.getOffset(name);
+    this.originalPivot = pivot;
     this.pivot = pivot.clone();
     if (this.diff != null) {
       this.pivot.add(this.diff);
@@ -209,6 +211,11 @@ public abstract class AbstractModelBone implements ModelBone {
   @Override
   public Vector getOffset() {
     return offset.clone();
+  }
+
+  @Override
+  public Vector getPivot() {
+    return originalPivot.clone();
   }
 
   public EntityModel getModel() {

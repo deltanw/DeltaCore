@@ -30,18 +30,16 @@ public record EntityModelFactoryImpl(ModelEngine<ItemStack> modelEngine) impleme
 
   @Override
   public PlayerModelImpl createPlayerModel(PlayerProfile profile) {
-    return new PlayerModelImpl(modelEngine, profile);
+    return new PlayerModelImpl(modelEngine, profile, null);
   }
-
-  // TODO: Name tag support
 
   @Override
   public PlayerModelImpl createPlayerModel(PlayerProfile profile, Component nameTag) {
-    return new PlayerModelImpl(modelEngine, profile);
+    return new PlayerModelImpl(modelEngine, profile, nameTag);
   }
 
   @Override
   public PlayerModelImpl createPlayerModel(Player player, boolean showNameTag) {
-    return new PlayerModelImpl(modelEngine, player.getPlayerProfile());
+    return new PlayerModelImpl(modelEngine, player.getPlayerProfile(), showNameTag ? player.playerListName() : null);
   }
 }

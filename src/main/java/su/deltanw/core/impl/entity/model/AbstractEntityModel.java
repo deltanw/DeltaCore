@@ -3,10 +3,15 @@ package su.deltanw.core.impl.entity.model;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.papermc.paper.adventure.PaperAdventure;
+import net.kyori.adventure.text.Component;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -32,6 +37,7 @@ public abstract class AbstractEntityModel implements EntityModel {
   private final Collection<ModelBone> additionalBones = new ArrayList<>();
   private ModelBoneSeat seat;
   private ModelBoneHead head;
+  protected Component nameTagComponent;
   private ModelBoneNameTag nameTag;
   private Location position;
   private double globalRotation;
@@ -45,6 +51,11 @@ public abstract class AbstractEntityModel implements EntityModel {
   @Override
   public double getGlobalRotation() {
     return globalRotation;
+  }
+
+  @Override
+  public Location getTrackingPosition() {
+    return position.clone();
   }
 
   @Override
@@ -170,19 +181,48 @@ public abstract class AbstractEntityModel implements EntityModel {
     }
   }
 
-  @Override
-  public void setNameTagEntity(BoneEntity entity) {
-    if (nameTag != null) {
-      nameTag.linkEntity(entity);
+  protected void updateNameTag() {
+    if (nameTag == null) {
+      return;
+    }
+
+    if (nameTagComponent == null) {
+      if (nameTag.getEntity() != null) {
+        nameTag.destroy();
+        nameTag.linkEntity(null);
+      }
+    } else {
+      if (nameTag.getEntity() != null) {
+        BoneEntity boneEntity = nameTag.getEntity();
+        ArmorStand armorStand = (ArmorStand) boneEntity.getEntity();
+        armorStand.setCustomName(PaperAdventure.asVanilla(nameTagComponent));
+        boneEntity.updateMeta();
+      } else {
+        ArmorStand armorStand = new ArmorStand(EntityType.ARMOR_STAND, ((CraftWorld) getPosition().getWorld()).getHandle());
+        armorStand.setInvisible(true);
+        armorStand.setMarker(true);
+        armorStand.setCustomNameVisible(true);
+        armorStand.setCustomName(PaperAdventure.asVanilla(nameTagComponent));
+        nameTag.linkEntity(new BoneEntity(armorStand, this));
+        nameTag.spawn(nameTag.calculatePosition());
+      }
     }
   }
 
   @Override
-  public BoneEntity getNameTagEntity() {
-    if (nameTag == null) {
-      return null;
-    }
-    return nameTag.getEntity();
+  public void setNameTag(Component nameTagComponent) {
+    this.nameTagComponent = nameTagComponent;
+    updateNameTag();
+  }
+
+  @Override
+  public Component getNameTag() {
+    return nameTagComponent;
+  }
+
+  @SuppressWarnings("unchecked")
+  public ModelBoneNameTag getNameTagBone() {
+    return nameTag;
   }
 
   @Override

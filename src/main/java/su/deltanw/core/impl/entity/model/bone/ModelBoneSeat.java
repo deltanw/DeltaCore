@@ -33,8 +33,9 @@ public class ModelBoneSeat extends AbstractModelBone {
 
   @Override
   public Location calculatePosition() {
+    World world = model.getPosition().getWorld();
     if (offset == null) {
-      return new Location(null, 0, 0, 0);
+      return new Location(world, 0, 0, 0);
     }
 
     Vector rotation = calculateRotation();
@@ -45,7 +46,7 @@ public class ModelBoneSeat extends AbstractModelBone {
         .multiply(scale)
         .add(model.getPosition().toVector())
         .add(model.getGlobalOffset())
-        .toLocation(null, (float) -rotation.getY(), (float) rotation.getX());
+        .toLocation(world, (float) -rotation.getY(), (float) rotation.getX());
   }
 
   @Override

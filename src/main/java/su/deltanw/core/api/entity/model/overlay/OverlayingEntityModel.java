@@ -1,5 +1,6 @@
 package su.deltanw.core.api.entity.model.overlay;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -10,7 +11,6 @@ import su.deltanw.core.api.entity.model.ModelEngine;
 import su.deltanw.core.api.entity.model.animation.AnimationDirection;
 import su.deltanw.core.api.entity.model.bone.ModelBone;
 import su.deltanw.core.api.entity.model.factory.EntityModelFactory;
-import su.deltanw.core.impl.entity.model.bone.BoneEntity;
 
 import java.util.List;
 import java.util.Set;
@@ -50,6 +50,11 @@ public class OverlayingEntityModel<T extends EntityModel> implements EntityModel
   @Override
   public Vector getGlobalOffset() {
     return underlyingModel.getGlobalOffset();
+  }
+
+  @Override
+  public Location getTrackingPosition() {
+    return underlyingModel.getTrackingPosition();
   }
 
   @Override
@@ -128,13 +133,18 @@ public class OverlayingEntityModel<T extends EntityModel> implements EntityModel
   }
 
   @Override
-  public void setNameTagEntity(BoneEntity entity) {
-    underlyingModel.setNameTagEntity(entity);
+  public void setNameTag(Component nameTag) {
+    underlyingModel.setNameTag(nameTag);
   }
 
   @Override
-  public BoneEntity getNameTagEntity() {
-    return underlyingModel.getNameTagEntity();
+  public Component getNameTag() {
+    return underlyingModel.getNameTag();
+  }
+
+  @Override
+  public <E> E getNameTagBone() {
+    return underlyingModel.getNameTagBone();
   }
 
   @Override

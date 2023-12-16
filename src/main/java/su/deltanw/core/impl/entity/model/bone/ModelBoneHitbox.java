@@ -108,7 +108,7 @@ public class ModelBoneHitbox extends AbstractModelBone {
     destroy();
     illegalChildren.clear();
     generateStands(cubes, pivot, name, rotation, model);
-    illegalChildren.forEach(modelBone -> modelBone.spawn(model.getPosition().toLocation(null)));
+    illegalChildren.forEach(modelBone -> modelBone.spawn(model.getPosition()));
   }
 
   @Override
@@ -145,8 +145,9 @@ public class ModelBoneHitbox extends AbstractModelBone {
 
   @Override
   public Location calculatePosition() {
+    World world = model.getPosition().getWorld();
     if (offset == null) {
-      return new Location(null, 0, 0, 0);
+      return new Location(world, 0, 0, 0);
     }
 
     Vector p = offset.clone();
@@ -154,13 +155,13 @@ public class ModelBoneHitbox extends AbstractModelBone {
     p = calculateGlobalRotation(p);
 
     if (actualPosition == null) {
-      actualPosition = p.multiply(0.25).multiply(scale).toLocation(null);
+      actualPosition = p.multiply(0.25).multiply(scale).toLocation(world);
       return actualPosition;
     }
 
     Location lp = actualPosition.clone();
-    Location newLoc = p.multiply(0.25).multiply(scale).toLocation(null);
-    actualPosition = Vector.fromJOML(lp.toVector().toVector3d().lerp(newLoc.toVector().toVector3d(), 0.25)).toLocation(null);
+    Location newLoc = p.multiply(0.25).multiply(scale).toLocation(world);
+    actualPosition = Vector.fromJOML(lp.toVector().toVector3d().lerp(newLoc.toVector().toVector3d(), 0.25)).toLocation(world);
 
     return lp;
   }

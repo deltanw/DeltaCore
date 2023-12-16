@@ -2,6 +2,7 @@ package su.deltanw.core.impl.entity.model.bone;
 
 import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.util.Vector;
 import su.deltanw.core.api.entity.model.EntityModel;
@@ -38,8 +39,9 @@ public class ModelBoneNameTag extends AbstractModelBone {
 
   @Override
   public Location calculatePosition() {
+    World world = model.getPosition().getWorld();
     if (offset == null) {
-      return new Location(null, 0, 0, 0);
+      return new Location(world, 0, 0, 0);
     }
 
     Vector p = offset.clone();
@@ -48,7 +50,7 @@ public class ModelBoneNameTag extends AbstractModelBone {
 
     return p.multiply(0.25)
         .multiply(scale)
-        .toLocation(null)
+        .toLocation(world)
         .add(model.getPosition())
         .add(model.getGlobalOffset());
   }

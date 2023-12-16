@@ -1212,6 +1212,21 @@
             0
           ],
           "cubes": []
+        },
+        {
+          "name": "nametag",
+          "pivot": [
+            0.0,
+            6.24,
+            0.0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [],
+          "parent": "_head"
         }
       ]
     }

@@ -29,6 +29,8 @@ public interface ModelBone {
 
   Vector getOffset();
 
+  Vector getPivot();
+
   ModelBone getParent();
 
   Vector getPropogatedRotation();
