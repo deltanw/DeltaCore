@@ -33,6 +33,7 @@ import su.deltanw.core.api.Placeholder;
 import su.deltanw.core.api.Placeholders;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.entity.model.ModelEngine;
+import su.deltanw.core.api.entity.model.factory.AnimationHandlerFactory;
 import su.deltanw.core.api.entity.model.factory.EntityModelFactory;
 import su.deltanw.core.api.entity.model.factory.ModelEngineFactory;
 import su.deltanw.core.api.injection.Injector;
@@ -71,6 +72,8 @@ import su.deltanw.core.impl.commands.BrigadierListener;
 import su.deltanw.core.impl.commands.CommandManager;
 import su.deltanw.core.impl.entity.model.AbstractEntityModel;
 import su.deltanw.core.impl.entity.model.PlayerModelImpl;
+import su.deltanw.core.impl.entity.model.animation.AnimationHandlerImpl;
+import su.deltanw.core.impl.entity.model.factory.AnimationHandlerFactoryImpl;
 import su.deltanw.core.impl.entity.model.factory.ModelEngineFactoryImpl;
 import su.deltanw.core.impl.entity.model.generator.BBEntityModel;
 import su.deltanw.core.impl.entity.model.generator.ModelGenerator;
@@ -108,6 +111,7 @@ public final class Core extends JavaPlugin implements Listener {
 
   private ModelEngineFactory<ItemStack> modelEngineFactory;
   private EntityModelFactory<AbstractEntityModel, PlayerModelImpl> entityModelFactory;
+  private AnimationHandlerFactory<AnimationHandlerImpl> animationHandlerFactory;
   private ModelEngine<ItemStack> defaultModelEngine;
 
   private ObservablePackBuilder<?> defaultPackBuilder;
@@ -212,6 +216,7 @@ public final class Core extends JavaPlugin implements Listener {
     this.modelEngineFactory = modelEngineFactory;
     this.defaultModelEngine = modelEngineFactory.createModelEngine();
     this.entityModelFactory = modelEngineFactory.createModelFactory(this.defaultModelEngine);
+    this.animationHandlerFactory = new AnimationHandlerFactoryImpl();
 
     loadPack();
 
@@ -526,6 +531,10 @@ public final class Core extends JavaPlugin implements Listener {
 
   public EntityModelFactory<?, ?> getEntityModelFactory() {
     return entityModelFactory;
+  }
+
+  public AnimationHandlerFactory<?> getAnimationHandlerFactory() {
+    return animationHandlerFactory;
   }
 
   public ModelEngine<ItemStack> getDefaultModelEngine() {
