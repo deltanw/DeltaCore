@@ -56,11 +56,7 @@ public abstract class AbstractEntityModel implements EntityModel {
     Bukkit.getPluginManager().callEvent(new AnimationCompleteEvent(this, animation, direction));
   }
 
-  public void init(Location location) {
-    init(location, 1);
-  }
-
-  public void init(Location location, float scale) {
+  public void spawn(Location location, float scale) {
     this.position = location.toVector().toLocation(location.getWorld());
 
     JsonObject loadedModel = modelEngine.getModelLoader().loadModel(getId());

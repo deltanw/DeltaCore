@@ -106,7 +106,7 @@ public class PlayerModel extends AbstractEntityModel {
   }
 
   @Override
-  public void init(Location location, float scale) {
+  public void spawn(Location location, float scale) {
     setPosition(location.toVector().toLocation(location.getWorld()));
     setGlobalRotation(location.getYaw());
 

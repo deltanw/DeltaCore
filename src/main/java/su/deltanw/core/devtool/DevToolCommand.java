@@ -11,21 +11,17 @@ import java.util.Comparator;
 import java.util.List;
 import net.elytrium.commons.config.Placeholders;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import su.deltanw.core.Core;
 import su.deltanw.core.api.Menu;
 import su.deltanw.core.api.entity.model.EntityModel;
-import su.deltanw.core.api.entity.model.animation.AnimationHandler;
 import su.deltanw.core.config.MessagesConfig;
-import su.deltanw.core.config.ModelsConfig;
 import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.api.commands.BrigadierCommand;
 import su.deltanw.core.api.commands.CommandSource;
-import su.deltanw.core.impl.entity.model.AbstractEntityModel;
-import su.deltanw.core.impl.entity.model.animation.AnimationHandlerImpl;
+import su.deltanw.core.impl.entity.model.PlayerModel;
 import su.deltanw.core.impl.item.CustomItem;
 import su.deltanw.core.impl.model.CustomModel;
 
@@ -83,24 +79,12 @@ public class DevToolCommand extends BrigadierCommand {
 
   public int entityTest(CommandContext<CommandSource> context) throws CommandSyntaxException {
     Player player = context.getSource().toPlayerOrThrow();
-    AbstractEntityModel testModel = new AbstractEntityModel(context.getSource().core().getModelEngine()) {
-      @Override
-      public String getId() {
-        return "steve";
-      }
 
-      @Override
-      public void init(Location location) {
-        super.init(location.toVector().toLocation(location.getWorld()), 2.5F);
-      }
-    };
+    EntityModel model = new PlayerModel(context.getSource().core().getModelEngine(), player.getPlayerProfile());
 
     Collection<? extends Player> players = Bukkit.getOnlinePlayers();
-    players.forEach(testModel::addViewer);
-    testModel.init(player.getLocation());
-
-    AnimationHandler animationHandler = new AnimationHandlerImpl(testModel);
-    animationHandler.playRepeat("dab");
+    players.forEach(model::addViewer);
+    model.spawn(player.getLocation());
 
     return players.size();
   }

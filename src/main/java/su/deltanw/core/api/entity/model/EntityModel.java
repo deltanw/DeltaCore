@@ -63,6 +63,12 @@ public interface EntityModel {
 
   void triggerAnimationEnd(String animation, AnimationDirection direction);
 
+  default void spawn(Location location) {
+    spawn(location, 1);
+  }
+
+  void spawn(Location location, float scale);
+
   void setScale(float scale);
 
   <I> ModelEngine<I> getEngine();
