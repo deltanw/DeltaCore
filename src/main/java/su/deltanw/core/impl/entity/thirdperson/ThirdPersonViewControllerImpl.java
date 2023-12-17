@@ -7,6 +7,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -199,9 +200,9 @@ public class ThirdPersonViewControllerImpl implements ThirdPersonViewController 
     }
 
     model.spawn(origin);
-    handler.lockPlayer(this);
 
     ServerGamePacketListenerImpl connection = serverPlayer.connection;
+    connection.send(metadataPacket, PacketSendListener.thenRun(() -> handler.lockPlayer(this)));
     connection.send(new ClientboundPlayerInfoUpdatePacket(
         EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER), Collections.singleton(viewer)));
     connection.send(new ClientboundAddPlayerPacket(viewer));
