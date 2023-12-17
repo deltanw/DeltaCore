@@ -6,17 +6,13 @@ import com.google.common.collect.Streams;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import net.elytrium.commons.config.Placeholders;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import su.deltanw.core.Core;
 import su.deltanw.core.api.Menu;
-import su.deltanw.core.api.entity.model.PlayerModel;
 import su.deltanw.core.config.MessagesConfig;
 import su.deltanw.core.impl.block.CustomBlock;
 import su.deltanw.core.api.commands.BrigadierCommand;
@@ -38,8 +34,6 @@ public class DevToolCommand extends BrigadierCommand {
     this.subCommand("blocks", blocks -> blocks.executes(this::openBlocks));
     this.subCommand("items", items -> items.executes(this::openItems));
     this.subCommand("models", models -> models.executes(this::openModels));
-
-    this.subCommand("entity", entity -> entity.executes(this::entityTest));
 
     this.subCommand("give", give -> {
       give.executes(context -> {
@@ -74,18 +68,6 @@ public class DevToolCommand extends BrigadierCommand {
     return this.openMenu(context.getSource(),
         new ModelsMenu(context.getSource().core(), CustomModel.getAll().stream().sorted(
                 Comparator.comparing(m -> m.key().asString())).toList(), 0));
-  }
-
-  public int entityTest(CommandContext<CommandSource> context) throws CommandSyntaxException {
-    Player player = context.getSource().toPlayerOrThrow();
-
-    PlayerModel model = context.getSource().core().getEntityModelFactory().createPlayerModel(player);
-
-    Collection<? extends Player> players = Bukkit.getOnlinePlayers();
-    players.forEach(model::addViewer);
-    model.spawn(player.getLocation());
-
-    return players.size();
   }
 
   public int openMenu(CommandSource source, Menu menu) throws CommandSyntaxException {
