@@ -36,6 +36,7 @@ import su.deltanw.core.api.entity.model.ModelEngine;
 import su.deltanw.core.api.entity.model.factory.AnimationHandlerFactory;
 import su.deltanw.core.api.entity.model.factory.EntityModelFactory;
 import su.deltanw.core.api.entity.model.factory.ModelEngineFactory;
+import su.deltanw.core.impl.entity.thirdperson.ThirdPersonNettyHandler;
 import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.api.model.VirtualHitbox;
 import su.deltanw.core.api.pack.*;
@@ -113,6 +114,8 @@ public final class Core extends JavaPlugin implements Listener {
   private EntityModelFactory<AbstractEntityModel, PlayerModelImpl> entityModelFactory;
   private AnimationHandlerFactory<AnimationHandlerImpl> animationHandlerFactory;
   private ModelEngine<ItemStack> defaultModelEngine;
+
+  private ThirdPersonNettyHandler thirdPersonNettyHandler;
 
   private ObservablePackBuilder<?> defaultPackBuilder;
   private CachingPackUploader defaultPackUploader;
@@ -218,6 +221,8 @@ public final class Core extends JavaPlugin implements Listener {
     this.entityModelFactory = modelEngineFactory.createModelFactory(this.defaultModelEngine);
     this.animationHandlerFactory = new AnimationHandlerFactoryImpl();
 
+    this.thirdPersonNettyHandler = new ThirdPersonNettyHandler(this);
+
     loadPack();
 
     loadCustomBlocks();
@@ -227,6 +232,7 @@ public final class Core extends JavaPlugin implements Listener {
     injector.addInjector(channel -> {
         channel.pipeline().addBefore("packet_handler", "custom_block_handler", new CustomBlockNettyHandler(this));
         channel.pipeline().addBefore("packet_handler", "custom_model_handler", new CustomModelNettyHandler(this));
+        channel.pipeline().addBefore("packet_handler", "thirdperson_handler", thirdPersonNettyHandler);
     });
 
     injectorImpl.inject();
@@ -241,6 +247,7 @@ public final class Core extends JavaPlugin implements Listener {
     Bukkit.getPluginManager().registerEvents(new CustomBlockListener(this), this);
     Bukkit.getPluginManager().registerEvents(new CustomModelListener(this), this);
     Bukkit.getPluginManager().registerEvents(new BrigadierListener(this), this);
+    Bukkit.getPluginManager().registerEvents(thirdPersonNettyHandler, this);
     CustomBlockData.registerListener(this);
 
     this.registerCommand(new DevToolCommand());
@@ -535,6 +542,10 @@ public final class Core extends JavaPlugin implements Listener {
 
   public AnimationHandlerFactory<?> getAnimationHandlerFactory() {
     return animationHandlerFactory;
+  }
+
+  public ThirdPersonNettyHandler getThirdPersonNettyHandler() {
+    return thirdPersonNettyHandler;
   }
 
   public ModelEngine<ItemStack> getDefaultModelEngine() {
