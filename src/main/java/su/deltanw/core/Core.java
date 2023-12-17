@@ -36,6 +36,7 @@ import su.deltanw.core.api.entity.model.ModelEngine;
 import su.deltanw.core.api.entity.model.factory.AnimationHandlerFactory;
 import su.deltanw.core.api.entity.model.factory.EntityModelFactory;
 import su.deltanw.core.api.entity.model.factory.ModelEngineFactory;
+import su.deltanw.core.api.entity.thirdperson.ThirdPersonViewFactory;
 import su.deltanw.core.impl.entity.thirdperson.ThirdPersonNettyHandler;
 import su.deltanw.core.api.injection.Injector;
 import su.deltanw.core.api.model.VirtualHitbox;
@@ -81,6 +82,7 @@ import su.deltanw.core.impl.entity.model.generator.ModelGenerator;
 import su.deltanw.core.impl.entity.model.generator.TextureData;
 import su.deltanw.core.impl.entity.model.parser.ModelEngineFiles;
 import su.deltanw.core.impl.entity.model.parser.ModelParser;
+import su.deltanw.core.impl.entity.thirdperson.ThirdPersonViewFactoryImpl;
 import su.deltanw.core.impl.injection.InjectorImpl;
 import su.deltanw.core.impl.item.CustomItem;
 import su.deltanw.core.impl.pack.PackBuilderImpl;
@@ -116,6 +118,7 @@ public final class Core extends JavaPlugin implements Listener {
   private ModelEngine<ItemStack> defaultModelEngine;
 
   private ThirdPersonNettyHandler thirdPersonNettyHandler;
+  private ThirdPersonViewFactory thirdPersonViewFactory;
 
   private ObservablePackBuilder<?> defaultPackBuilder;
   private CachingPackUploader defaultPackUploader;
@@ -222,6 +225,7 @@ public final class Core extends JavaPlugin implements Listener {
     this.animationHandlerFactory = new AnimationHandlerFactoryImpl();
 
     this.thirdPersonNettyHandler = new ThirdPersonNettyHandler(this);
+    this.thirdPersonViewFactory = new ThirdPersonViewFactoryImpl(thirdPersonNettyHandler);
 
     loadPack();
 
@@ -546,6 +550,10 @@ public final class Core extends JavaPlugin implements Listener {
 
   public ThirdPersonNettyHandler getThirdPersonNettyHandler() {
     return thirdPersonNettyHandler;
+  }
+
+  public ThirdPersonViewFactory getThirdPersonViewFactory() {
+    return thirdPersonViewFactory;
   }
 
   public ModelEngine<ItemStack> getDefaultModelEngine() {

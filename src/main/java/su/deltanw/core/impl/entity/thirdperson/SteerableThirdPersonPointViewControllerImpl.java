@@ -9,8 +9,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import su.deltanw.core.api.entity.model.factory.EntityModelFactory;
+import su.deltanw.core.api.entity.thirdperson.ThirdPersonPointViewController;
 
-public class SteerableThirdPersonPointViewController extends ThirdPersonViewController {
+public class SteerableThirdPersonPointViewControllerImpl extends ThirdPersonViewControllerImpl implements ThirdPersonPointViewController {
 
   private static final float MAX_ROTATION_ANGLE = 0.5F;
   private static final float SENSITIVITY = 0.5F;
@@ -18,8 +19,8 @@ public class SteerableThirdPersonPointViewController extends ThirdPersonViewCont
   private final Vector direction = new Vector();
   private final Location target;
 
-  public SteerableThirdPersonPointViewController(EntityModelFactory<?, ?> factory, ThirdPersonNettyHandler handler,
-                                                 Player player, Location viewPoint, Location target) {
+  public SteerableThirdPersonPointViewControllerImpl(EntityModelFactory<?, ?> factory, ThirdPersonNettyHandler handler,
+                                                     Player player, Location viewPoint, Location target) {
     super(factory, handler, player, viewPoint);
     this.target = target.clone();
     setTarget(target);
@@ -61,12 +62,14 @@ public class SteerableThirdPersonPointViewController extends ThirdPersonViewCont
     }
   }
 
+  @Override
   public void calculateDirection() {
     this.direction.copy(target.clone().subtract(viewPoint).toVector().normalize());
     this.viewPoint.setDirection(direction);
     updateViewerPosition();
   }
 
+  @Override
   public void setTarget(Location target) {
     this.target.set(target.x(), target.y(), target.z());
     calculateDirection();

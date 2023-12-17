@@ -25,6 +25,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import su.deltanw.core.api.entity.model.PlayerModel;
 import su.deltanw.core.api.entity.model.factory.EntityModelFactory;
+import su.deltanw.core.api.entity.thirdperson.ThirdPersonViewController;
 import su.deltanw.core.api.entity.thirdperson.event.ThirdPersonViewEnterEvent;
 import su.deltanw.core.api.entity.thirdperson.event.ThirdPersonViewQuitEvent;
 
@@ -32,7 +33,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 // TODO: Refactor
-public class ThirdPersonViewController {
+public class ThirdPersonViewControllerImpl implements ThirdPersonViewController {
 
   private static final List<Pair<EquipmentSlot, ItemStack>> EMPTY_EQUIPMENT =
       Arrays.stream(EquipmentSlot.values())
@@ -54,9 +55,9 @@ public class ThirdPersonViewController {
   protected Location viewPoint;
   private boolean active = false;
 
-  public ThirdPersonViewController(EntityModelFactory<?, ?> factory,
-                                   ThirdPersonNettyHandler handler,
-                                   Player player, Location viewPoint) {
+  public ThirdPersonViewControllerImpl(EntityModelFactory<?, ?> factory,
+                                       ThirdPersonNettyHandler handler,
+                                       Player player, Location viewPoint) {
     this.handler = handler;
     this.player = player;
     this.viewPoint = viewPoint.clone();
@@ -139,6 +140,7 @@ public class ThirdPersonViewController {
     }
   }
 
+  @Override
   public boolean enterView() {
     ThirdPersonViewEnterEvent event = new ThirdPersonViewEnterEvent(this);
     Bukkit.getPluginManager().callEvent(event);
@@ -207,6 +209,7 @@ public class ThirdPersonViewController {
     return values;
   }
 
+  @Override
   public void destroyView() {
     if (!active) {
       return;
@@ -278,6 +281,7 @@ public class ThirdPersonViewController {
     connection.send(new ClientboundRotateHeadPacket(viewer, convertAngle(yaw)));
   }
 
+  @Override
   public void rotate(float yaw, float pitch) {
     viewPoint.setYaw(yaw);
     viewPoint.setPitch(pitch);
@@ -288,6 +292,7 @@ public class ThirdPersonViewController {
     }
   }
 
+  @Override
   public void move(double deltaX, double deltaY, double deltaZ) {
     viewPoint.add(deltaX, deltaY, deltaZ);
     updateViewerPosition();
@@ -297,6 +302,7 @@ public class ThirdPersonViewController {
     }
   }
 
+  @Override
   public void move(double deltaX, double deltaY, double deltaZ, float yaw, float pitch) {
     viewPoint.add(deltaX, deltaY, deltaZ);
     viewPoint.setYaw(yaw);
@@ -308,23 +314,28 @@ public class ThirdPersonViewController {
     }
   }
 
+  @Override
   public void moveTo(Location to) {
     Location delta = to.clone().subtract(viewPoint);
     move(delta.getX(), delta.getY(), delta.getZ(), to.getYaw(), to.getPitch());
   }
 
+  @Override
   public Player getPlayer() {
     return player;
   }
 
+  @Override
   public Location getViewPoint() {
     return viewPoint;
   }
 
+  @Override
   public PlayerModel getModel() {
     return model;
   }
 
+  @Override
   public boolean isActive() {
     return active;
   }

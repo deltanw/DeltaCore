@@ -18,14 +18,14 @@ import su.deltanw.core.api.entity.model.EntityModel;
 @ChannelHandler.Sharable
 public class ThirdPersonNettyHandler extends ChannelOutboundHandlerAdapter implements Listener {
 
-  private final Int2ObjectMap<ThirdPersonViewController> thirdPersonControllers = new Int2ObjectOpenHashMap<>();
+  private final Int2ObjectMap<ThirdPersonViewControllerImpl> thirdPersonControllers = new Int2ObjectOpenHashMap<>();
   private final Core core;
 
   public ThirdPersonNettyHandler(Core core) {
     this.core = core;
   }
 
-  public void lockPlayer(ThirdPersonViewController controller) {
+  public void lockPlayer(ThirdPersonViewControllerImpl controller) {
     thirdPersonControllers.put(controller.getPlayer().getEntityId(), controller);
   }
 
@@ -51,7 +51,7 @@ public class ThirdPersonNettyHandler extends ChannelOutboundHandlerAdapter imple
   @EventHandler
   public void onTrack(PlayerTrackEntityEvent event) {
     int id = event.getEntity().getEntityId();
-    ThirdPersonViewController controller = thirdPersonControllers.get(id);
+    ThirdPersonViewControllerImpl controller = thirdPersonControllers.get(id);
     if (controller != null) {
       EntityModel model = controller.getModel();
       model.spawn(event.getPlayer());
@@ -68,7 +68,7 @@ public class ThirdPersonNettyHandler extends ChannelOutboundHandlerAdapter imple
   @EventHandler
   public void onUntrack(PlayerUntrackEntityEvent event) {
     int id = event.getEntity().getEntityId();
-    ThirdPersonViewController controller = thirdPersonControllers.get(id);
+    ThirdPersonViewControllerImpl controller = thirdPersonControllers.get(id);
     if (controller != null) {
       EntityModel model = controller.getModel();
       model.removeViewer(event.getPlayer());

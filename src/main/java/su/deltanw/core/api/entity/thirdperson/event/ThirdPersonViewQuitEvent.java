@@ -3,7 +3,7 @@ package su.deltanw.core.api.entity.thirdperson.event;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
-import su.deltanw.core.impl.entity.thirdperson.ThirdPersonViewController;
+import su.deltanw.core.api.entity.thirdperson.ThirdPersonViewController;
 
 public class ThirdPersonViewQuitEvent extends Event {
 
