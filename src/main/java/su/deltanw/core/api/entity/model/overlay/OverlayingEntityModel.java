@@ -78,6 +78,16 @@ public class OverlayingEntityModel<T extends EntityModel> implements EntityModel
   }
 
   @Override
+  public void despawn(Player player) {
+    underlyingModel.despawn(player);
+  }
+
+  @Override
+  public void despawn() {
+    underlyingModel.despawn();
+  }
+
+  @Override
   public void removeHitboxes() {
     underlyingModel.removeHitboxes();
   }
@@ -170,6 +180,11 @@ public class OverlayingEntityModel<T extends EntityModel> implements EntityModel
   @Override
   public void spawn(Location location, float scale) {
     underlyingModel.spawn(location, scale);
+  }
+
+  @Override
+  public void spawn(Player player) {
+    underlyingModel.spawn(player);
   }
 
   @Override

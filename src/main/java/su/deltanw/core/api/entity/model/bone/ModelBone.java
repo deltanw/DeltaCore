@@ -1,6 +1,7 @@
 package su.deltanw.core.api.entity.model.bone;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.joml.Quaterniond;
 import su.deltanw.core.api.entity.model.animation.ModelAnimation;
@@ -9,11 +10,15 @@ public interface ModelBone {
 
   void spawn(Location location);
 
+  void spawn(Player player);
+
   Vector applyTransform(Vector v);
 
   void display();
 
   void destroy();
+
+  void despawn(Player player);
 
   Vector simulateTransform(Vector v, String animation, int time);
 

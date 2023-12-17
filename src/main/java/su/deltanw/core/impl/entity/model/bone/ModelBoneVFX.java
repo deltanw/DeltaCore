@@ -2,6 +2,7 @@ package su.deltanw.core.impl.entity.model.bone;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import su.deltanw.core.api.entity.model.EntityModel;
 import su.deltanw.core.api.entity.model.bone.ModelBone;
@@ -60,5 +61,9 @@ public class ModelBoneVFX extends AbstractModelBone {
 
   @Override
   public void destroy() {
+  }
+
+  @Override
+  public void despawn(Player player) {
   }
 }

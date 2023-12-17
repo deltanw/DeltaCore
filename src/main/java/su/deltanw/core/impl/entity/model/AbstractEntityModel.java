@@ -94,6 +94,13 @@ public abstract class AbstractEntityModel implements EntityModel {
     setState("normal");
   }
 
+  @Override
+  public void spawn(Player player) {
+    for (ModelBone modelBonePart : parts.values()) {
+      modelBonePart.spawn(player);
+    }
+  }
+
   protected void loadBones(World world, JsonObject loadedModel, float scale) {
     for (JsonElement bone :
         loadedModel.get("minecraft:geometry")
@@ -307,6 +314,20 @@ public abstract class AbstractEntityModel implements EntityModel {
     hittableBones.clear();
     vfxBones.clear();
     parts.clear();
+  }
+
+  @Override
+  public void despawn(Player player) {
+    for (ModelBone modelBone : parts.values()) {
+      if (modelBone.getParent() == null) {
+        modelBone.despawn(player);
+      }
+    }
+  }
+
+  @Override
+  public void despawn() {
+    viewers.forEach(this::despawn);
   }
 
   @Override

@@ -72,6 +72,14 @@ public class DisplayEntityModelBone extends AbstractModelBone implements ModelBo
   }
 
   @Override
+  public void despawn(Player player) {
+    super.despawn(player);
+    if (baseStand != null) {
+      baseStand.remove(player);
+    }
+  }
+
+  @Override
   public Location calculatePosition() {
     return model.getPosition().toLocation(world);
   }
@@ -150,6 +158,15 @@ public class DisplayEntityModelBone extends AbstractModelBone implements ModelBo
       armorStand.setPos(location.getX(), location.getY(), location.getZ());
       armorStand.setRot(location.getYaw(), location.getPitch());
       baseStand.spawn(location);
+    }
+  }
+
+  @Override
+  public void spawn(Player player) {
+    super.spawn(player);
+
+    if (baseStand != null) {
+      baseStand.spawn(player);
     }
   }
 

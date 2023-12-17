@@ -33,6 +33,10 @@ public interface EntityModel {
 
   void destroy();
 
+  void despawn(Player player);
+
+  void despawn();
+
   void removeHitboxes();
 
   void mountEntity(Entity entity);
@@ -72,6 +76,8 @@ public interface EntityModel {
   }
 
   void spawn(Location location, float scale);
+
+  void spawn(Player player);
 
   void setScale(float scale);
 

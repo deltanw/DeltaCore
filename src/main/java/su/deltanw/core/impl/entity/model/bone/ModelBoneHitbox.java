@@ -128,9 +128,17 @@ public class ModelBoneHitbox extends AbstractModelBone {
   public void spawn(Location location) {
     illegalChildren.forEach(modelBone -> {
       modelBone.spawn(modelBone.calculatePosition().add(model.getPosition()));
-      Bukkit.getScheduler().runTask(Core.getPlugin(Core.class), modelBone::display);
     });
     super.spawn(location);
+  }
+
+  @Override
+  public void spawn(Player player) {
+    illegalChildren.forEach(modelBone -> {
+      modelBone.spawn(player);
+      Bukkit.getScheduler().runTask(Core.getPlugin(Core.class), modelBone::display);
+    });
+    super.spawn(player);
   }
 
   @Override
@@ -170,6 +178,12 @@ public class ModelBoneHitbox extends AbstractModelBone {
   public void destroy() {
     super.destroy();
     illegalChildren.forEach(ModelBone::destroy);
+  }
+
+  @Override
+  public void despawn(Player player) {
+    super.despawn(player);
+    illegalChildren.forEach(child -> child.despawn(player));
   }
 
   @Override

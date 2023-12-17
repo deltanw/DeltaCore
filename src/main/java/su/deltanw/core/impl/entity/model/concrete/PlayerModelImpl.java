@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.profile.PlayerTextures;
 import org.bukkit.util.Vector;
@@ -141,6 +142,16 @@ public class PlayerModelImpl extends AbstractEntityModel implements PlayerModel 
     display();
 
     updateProfile();
+  }
+
+  @Override
+  public void spawn(Player player) {
+    for (String boneName : ORDER) {
+      ModelBone bone = parts.get(boneName);
+      if (bone != null) {
+        bone.spawn(player);
+      }
+    }
   }
 
   protected void updateProfile() {

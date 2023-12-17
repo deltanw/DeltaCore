@@ -2,6 +2,7 @@ package su.deltanw.core.impl.entity.model.bone;
 
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.joml.Quaterniond;
 import su.deltanw.core.api.entity.model.EntityModel;
@@ -200,11 +201,27 @@ public abstract class AbstractModelBone implements ModelBone {
   }
 
   @Override
+  public void despawn(Player player) {
+    children.forEach(child -> child.despawn(player));
+
+    if (entity != null) {
+      entity.remove(player);
+    }
+  }
+
+  @Override
   public void spawn(Location location) {
     if (offset != null && entity != null) {
       entity.getEntity().setNoGravity(true);
       entity.getEntity().setSilent(true);
       entity.spawn(location);
+    }
+  }
+
+  @Override
+  public void spawn(Player player) {
+    if (offset != null && entity != null) {
+      entity.spawn(player);
     }
   }
 
