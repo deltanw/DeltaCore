@@ -152,6 +152,24 @@ public class PlayerModelImpl extends AbstractEntityModel implements PlayerModel 
         bone.spawn(player);
       }
     }
+
+    if (getNameTagBone() != null) {
+      getNameTagBone().spawn(player);
+    }
+  }
+
+  @Override
+  public void despawn(Player player) {
+    for (String boneName : ORDER) {
+      ModelBone bone = parts.get(boneName);
+      if (bone != null) {
+        bone.despawn(player);
+      }
+    }
+
+    if (getNameTagBone() != null) {
+      getNameTagBone().despawn(player);
+    }
   }
 
   protected void updateProfile() {
