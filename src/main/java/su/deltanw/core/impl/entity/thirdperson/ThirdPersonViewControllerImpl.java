@@ -23,9 +23,13 @@ import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import su.deltanw.core.Core;
 import su.deltanw.core.api.entity.model.PlayerModel;
 import su.deltanw.core.api.entity.model.factory.EntityModelFactory;
 import su.deltanw.core.api.entity.thirdperson.ThirdPersonViewController;
+import su.deltanw.core.api.entity.thirdperson.callback.ThirdPersonCommandCallback;
+import su.deltanw.core.api.entity.thirdperson.callback.ThirdPersonPlayerCommand;
+import su.deltanw.core.api.entity.thirdperson.event.ThirdPersonPlayerCommandEvent;
 import su.deltanw.core.api.entity.thirdperson.event.ThirdPersonViewEnterEvent;
 import su.deltanw.core.api.entity.thirdperson.event.ThirdPersonViewQuitEvent;
 
@@ -54,6 +58,7 @@ public class ThirdPersonViewControllerImpl implements ThirdPersonViewController 
   private final Location origin;
   protected Location viewPoint;
   private boolean active = false;
+  private ThirdPersonCommandCallback callback = null;
 
   public ThirdPersonViewControllerImpl(EntityModelFactory<?, ?> factory,
                                        ThirdPersonNettyHandler handler,
@@ -72,6 +77,16 @@ public class ThirdPersonViewControllerImpl implements ThirdPersonViewController 
     this.origin = player.getLocation();
 
     updateViewerPosition();
+  }
+
+  @Override
+  public void setCallback(ThirdPersonCommandCallback callback) {
+    this.callback = callback;
+  }
+
+  @Override
+  public ThirdPersonCommandCallback getCallback() {
+    return callback;
   }
 
   private byte convertAngle(float angle) {
@@ -123,6 +138,15 @@ public class ThirdPersonViewControllerImpl implements ThirdPersonViewController 
               return;
             }
 
+            if (msg instanceof ServerboundPlayerInputPacket packet) {
+              if (packet.isShiftKeyDown()) {
+                doCallback(ThirdPersonPlayerCommand.SHIFT_KEY);
+              }
+              if (packet.isJumping()) {
+                doCallback(ThirdPersonPlayerCommand.JUMP);
+              }
+            }
+
             super.channelRead(ctx, msg);
           }
 
@@ -132,6 +156,16 @@ public class ThirdPersonViewControllerImpl implements ThirdPersonViewController 
             super.channelInactive(ctx);
           }
         });
+  }
+
+  private void doCallback(ThirdPersonPlayerCommand command) {
+    Bukkit.getScheduler().runTask(Core.getPlugin(Core.class), () -> {
+      ThirdPersonPlayerCommandEvent event = new ThirdPersonPlayerCommandEvent(ThirdPersonViewControllerImpl.this, command);
+      Bukkit.getPluginManager().callEvent(event);
+      if (!event.isCancelled() && callback != null) {
+        callback.execute(command);
+      }
+    });
   }
 
   protected void deject(Channel channel) {

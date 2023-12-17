@@ -3,8 +3,13 @@ package su.deltanw.core.api.entity.thirdperson;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import su.deltanw.core.api.entity.model.PlayerModel;
+import su.deltanw.core.api.entity.thirdperson.callback.ThirdPersonCommandCallback;
 
 public interface ThirdPersonViewController {
+
+  void setCallback(ThirdPersonCommandCallback callback);
+
+  ThirdPersonCommandCallback getCallback();
 
   boolean enterView();
 
