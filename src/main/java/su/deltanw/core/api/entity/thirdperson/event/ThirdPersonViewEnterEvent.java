@@ -22,11 +22,6 @@ public class ThirdPersonViewEnterEvent extends Event implements Cancellable {
   }
 
   @Override
-  public @NotNull HandlerList getHandlers() {
-    return HANDLERS;
-  }
-
-  @Override
   public boolean isCancelled() {
     return cancelled;
   }
@@ -34,5 +29,14 @@ public class ThirdPersonViewEnterEvent extends Event implements Cancellable {
   @Override
   public void setCancelled(boolean cancel) {
     cancelled = cancel;
+  }
+
+  @Override
+  public @NotNull HandlerList getHandlers() {
+    return HANDLERS;
+  }
+
+  public static HandlerList getHandlerList() {
+    return HANDLERS;
   }
 }
