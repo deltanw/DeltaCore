@@ -14,7 +14,7 @@ import su.deltanw.core.api.entity.thirdperson.ThirdPersonPointViewController;
 public class SteerableThirdPersonPointViewControllerImpl extends ThirdPersonViewControllerImpl implements ThirdPersonPointViewController {
 
   private static final float MAX_ROTATION_ANGLE = 0.5F;
-  private static final float SENSITIVITY = 0.5F;
+  private static final float SENSITIVITY = 0.05F;
 
   private final Vector direction = new Vector();
   private final Location target;
@@ -39,13 +39,13 @@ public class SteerableThirdPersonPointViewControllerImpl extends ThirdPersonView
               if (packet.hasRotation()) {
                 if (previousYaw != null) {
                   Vector relative = viewPoint.clone().subtract(target).toVector();
-                  float diff = (packet.xRot - previousYaw) * SENSITIVITY;
+                  float diff = (previousYaw - packet.yRot) * SENSITIVITY;
                   diff = Math.min(Math.max(diff, -MAX_ROTATION_ANGLE), MAX_ROTATION_ANGLE);
                   relative.rotateAroundY(Location.normalizeYaw(diff));
                   Location newViewPoint = relative.toLocation(viewPoint.getWorld()).add(target);
                   moveTo(newViewPoint);
                 }
-                previousYaw = packet.xRot;
+                previousYaw = packet.yRot;
               }
             }
             super.channelRead(ctx, msg);
