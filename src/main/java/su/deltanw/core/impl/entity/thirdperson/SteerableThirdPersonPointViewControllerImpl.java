@@ -29,7 +29,7 @@ public class SteerableThirdPersonPointViewControllerImpl extends ThirdPersonView
   private final Vector direction = new Vector();
   private final Location target;
 
-  public SteerableThirdPersonPointViewControllerImpl(EntityModelFactory<?, ?> factory, ThirdPersonNettyHandler handler,
+  public SteerableThirdPersonPointViewControllerImpl(EntityModelFactory<?, ?> factory, ThirdPersonViewHandler handler,
                                                      Player player, Location viewPoint, Location target) {
     super(factory, handler, player, viewPoint);
     this.target = target.clone();

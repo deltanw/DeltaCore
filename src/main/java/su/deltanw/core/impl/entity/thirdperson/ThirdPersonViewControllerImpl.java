@@ -52,7 +52,7 @@ public class ThirdPersonViewControllerImpl implements ThirdPersonViewController 
   private static final List<SynchedEntityData.DataValue<?>> INVISIBLE_METADATA =
       List.of(new SynchedEntityData.DataValue<>(0, EntityDataSerializers.BYTE, (byte) 0x20));
 
-  private final ThirdPersonNettyHandler handler;
+  private final ThirdPersonViewHandler handler;
   private final Player player;
   protected final ServerPlayer viewer;
   private final PlayerModel model;
@@ -62,7 +62,7 @@ public class ThirdPersonViewControllerImpl implements ThirdPersonViewController 
   private ThirdPersonCommandCallback callback = null;
 
   public ThirdPersonViewControllerImpl(EntityModelFactory<?, ?> factory,
-                                       ThirdPersonNettyHandler handler,
+                                       ThirdPersonViewHandler handler,
                                        Player player, Location viewPoint) {
     this.handler = handler;
     this.player = player;

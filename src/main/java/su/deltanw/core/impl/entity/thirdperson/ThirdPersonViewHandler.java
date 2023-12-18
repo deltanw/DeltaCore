@@ -16,12 +16,12 @@ import su.deltanw.core.Core;
 import su.deltanw.core.api.entity.model.EntityModel;
 
 @ChannelHandler.Sharable
-public class ThirdPersonNettyHandler extends ChannelOutboundHandlerAdapter implements Listener {
+public class ThirdPersonViewHandler extends ChannelOutboundHandlerAdapter implements Listener {
 
   private final Int2ObjectMap<ThirdPersonViewControllerImpl> thirdPersonControllers = new Int2ObjectOpenHashMap<>();
   private final Core core;
 
-  public ThirdPersonNettyHandler(Core core) {
+  public ThirdPersonViewHandler(Core core) {
     this.core = core;
   }
 
