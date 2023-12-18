@@ -57,17 +57,16 @@ vec2 baseArmUV(int inner, bool slim, int face) {
     float x = UV0.x * 2 - inner;
     if (slim) {
         if (x < 0.375) {
-            x *= 8.0 / 7.0;
+            x *= 0.25;
         } else if (x > 0.625 && x < 0.875) {
-            if (face == 0 || face == 3) {
-                x *= 10.0;
+            if (face == 3) {
+                x = 0.15625;
             } else {
-                x *= 11.0;
+                x = 0.171875;
             }
-            x /= 14.0;
+        } else {
+            x *= 0.21875;
         }
-
-        x *= 0.21875;
     } else {
         x *= 0.25;
     }
@@ -114,7 +113,7 @@ void main() {
     } else {
         int index = gl_VertexID / 48 % 6;
         int inner = gl_VertexID / 24 % 2;
-        int face = gl_VertexID % 12;
+        int face = gl_VertexID / 4 % 6;
         bool slim = isSlim();
 
         if (index == 1) {
