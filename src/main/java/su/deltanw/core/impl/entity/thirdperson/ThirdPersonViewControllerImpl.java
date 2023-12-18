@@ -54,7 +54,7 @@ public class ThirdPersonViewControllerImpl implements ThirdPersonViewController 
 
   private final ThirdPersonNettyHandler handler;
   private final Player player;
-  private final ServerPlayer viewer;
+  protected final ServerPlayer viewer;
   private final PlayerModel model;
   private final Location origin;
   protected Location viewPoint;
@@ -90,11 +90,11 @@ public class ThirdPersonViewControllerImpl implements ThirdPersonViewController 
     return callback;
   }
 
-  private byte convertAngle(float angle) {
+  protected byte convertAngle(float angle) {
     return (byte) Math.floor(angle * 256.0F / 360.0F);
   }
 
-  private short convertDelta(double delta) {
+  protected short convertDelta(double delta) {
     return (short) Math.round(delta * 4096.0);
   }
 
