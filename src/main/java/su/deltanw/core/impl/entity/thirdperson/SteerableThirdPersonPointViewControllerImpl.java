@@ -6,9 +6,11 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.entity.RelativeMovement;
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
@@ -28,6 +30,7 @@ public class SteerableThirdPersonPointViewControllerImpl extends ThirdPersonView
 
   private final Vector direction = new Vector();
   private final Location target;
+  private double distance;
 
   public SteerableThirdPersonPointViewControllerImpl(EntityModelFactory<?, ?> factory, ThirdPersonViewHandler handler,
                                                      Player player, Location viewPoint, Location target) {
@@ -59,7 +62,7 @@ public class SteerableThirdPersonPointViewControllerImpl extends ThirdPersonView
             if (msg instanceof ServerboundMovePlayerPacket packet) {
               if (packet.hasRotation()) {
                 if (rotation != null) {
-                  Vector relative = viewPoint.clone().subtract(target).toVector();
+                  Vector relative = direction.clone().multiply(-distance);
 
                   float yawDiff = (rotation.y() - packet.yRot) * SENSITIVITY;
                   yawDiff = Math.min(Math.max(yawDiff, -MAX_YAW_ROTATION_DIFF), MAX_YAW_ROTATION_DIFF);
@@ -73,7 +76,17 @@ public class SteerableThirdPersonPointViewControllerImpl extends ThirdPersonView
                   Vector axis = relative.clone().normalize().crossProduct(new Vector(0, 1, 0));
                   relative.rotateAroundNonUnitAxis(axis.normalize(), Math.toRadians(pitchDiff));
 
-                  moveTo(relative.toLocation(viewPoint.getWorld()).add(target));
+                  Location targetLocation;
+                  Vector direction = relative.clone().normalize();
+                  RayTraceResult result = viewPoint.getWorld().rayTraceBlocks(target, direction, distance + 1.0, FluidCollisionMode.NEVER, true);
+                  if (result != null) {
+                    targetLocation = result.getHitPosition().toLocation(viewPoint.getWorld());
+                    targetLocation.add(direction.clone().multiply(new Vector(-0.6, -1.6, -0.6)));
+                  } else {
+                    targetLocation = relative.toLocation(viewPoint.getWorld()).add(target);
+                  }
+
+                  moveTo(targetLocation);
                 } else {
                   rotation = new Vector2f();
                 }
@@ -103,10 +116,15 @@ public class SteerableThirdPersonPointViewControllerImpl extends ThirdPersonView
     updateViewerPosition();
   }
 
+  public void calculateDistance() {
+    distance = viewPoint.distance(target);
+  }
+
   @Override
   public void setTarget(Location target) {
     this.target.set(target.x(), target.y(), target.z());
     calculateDirection();
+    calculateDistance();
   }
 
   @Override

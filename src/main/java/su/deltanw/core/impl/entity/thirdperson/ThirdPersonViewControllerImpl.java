@@ -99,7 +99,7 @@ public class ThirdPersonViewControllerImpl implements ThirdPersonViewController 
   }
 
   protected void updateViewerPosition() {
-    viewer.setPos(viewPoint.getX(), viewPoint.getY() - 1.8, viewPoint.getZ());
+    viewer.setPos(viewPoint.getX(), viewPoint.getY() - 1.6, viewPoint.getZ());
     viewer.setRot(viewPoint.getYaw(), viewPoint.getPitch());
   }
 
