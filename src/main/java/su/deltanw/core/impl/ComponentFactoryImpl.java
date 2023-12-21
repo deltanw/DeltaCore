@@ -193,7 +193,7 @@ public class ComponentFactoryImpl implements ComponentFactory {
     packBuilder.mergeJson("assets/minecraft/font/default.json", font.toString());
 
     TextComponent component = Component.text(text)
-            .append(Component.text("render")); // TODO: Generate other symbols instead of hard-coding them
+            .append(Component.text("ണ")); // TODO: Generate other symbols instead of hard-coding them
     animatedCache.put(name, component);
 
     return component;
