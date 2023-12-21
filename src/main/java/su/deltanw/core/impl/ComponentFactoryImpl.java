@@ -110,8 +110,20 @@ public class ComponentFactoryImpl implements ComponentFactory {
       throw new IllegalArgumentException("no input frames");
     }
 
-    float ratio = (float) frames.get(0).getWidth() / frames.get(0).getHeight();
+    int imageHeight = frames.get(0).getHeight();
+    int imageWidth = frames.get(0).getWidth();
+    float ratio = (float) imageWidth/ imageHeight;
+    int ceiledRatio = (int) Math.ceil(ratio);
     boolean isMultiPart = ratio > 1.0;
+
+    frames = frames.stream().map(image -> {
+      BufferedImage centered = new BufferedImage(ceiledRatio * imageHeight, imageHeight, BufferedImage.TYPE_INT_ARGB);
+      Graphics2D graphics = centered.createGraphics();
+      graphics.drawImage(image, (int) ((ceiledRatio - ratio) / 2 * imageHeight), 0, null);
+      graphics.dispose();
+      return centered;
+    }).toList();
+
     if (isMultiPart) {
       int parts = (int) Math.ceil(ratio);
       TextComponent.Builder builder = Component.text();
@@ -132,7 +144,7 @@ public class ComponentFactoryImpl implements ComponentFactory {
 
     int numFrames = frames.size();
     int framesPerLine = (int) Math.ceil(Math.sqrt(numFrames));
-    int frameDim = Math.max(frames.get(0).getWidth(), frames.get(0).getHeight());
+    int frameDim = Math.max(imageWidth, imageHeight);
     int totalWidth = framesPerLine * frameDim + 2;
     int totalHeight = framesPerLine * frameDim + 2;
     BufferedImage mergedFrames = new BufferedImage(totalWidth, totalHeight, BufferedImage.TYPE_INT_ARGB);
