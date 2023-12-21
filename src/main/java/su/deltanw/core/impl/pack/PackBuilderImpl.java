@@ -1,6 +1,8 @@
 package su.deltanw.core.impl.pack;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.codehaus.plexus.util.FileUtils;
 import su.deltanw.core.api.pack.PackMeta;
@@ -50,6 +52,11 @@ public class PackBuilderImpl extends AbstractObservablePackBuilder<PackBuilderIm
   }
 
   @Override
+  public byte[] getFile(String path) {
+    return rawEntries.get(path);
+  }
+
+  @Override
   public PackBuilderImpl addImage(String path, RenderedImage image) throws IOException {
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
       ImageIO.write(image, "PNG", outputStream);
@@ -61,6 +68,43 @@ public class PackBuilderImpl extends AbstractObservablePackBuilder<PackBuilderIm
   @Override
   public PackBuilderImpl addText(String path, String text) {
     addFile(path, text.getBytes(StandardCharsets.UTF_8));
+    return this;
+  }
+
+  private void mergeJson(JsonObject destination, JsonObject source) {
+    for (Map.Entry<String, JsonElement> entry : source.entrySet()) {
+      String key = entry.getKey();
+      JsonElement value = entry.getValue();
+      if (destination.has(key)) {
+        JsonElement currentValue = destination.get(key);
+        if (value.isJsonArray() && currentValue.isJsonArray()) {
+          JsonArray currentArray = currentValue.getAsJsonArray();
+          JsonArray arrayToMerge = value.getAsJsonArray();
+          currentArray.addAll(arrayToMerge);
+        } else if (value.isJsonObject() && currentValue.isJsonObject()) {
+          mergeJson(currentValue.getAsJsonObject(), value.getAsJsonObject());
+        } else {
+          destination.add(key, value);
+        }
+      } else {
+        destination.add(key, value);
+      }
+    }
+  }
+
+  @Override
+  public PackBuilderImpl mergeJson(String path, String data) {
+    byte[] current = getFile(path);
+    if (current == null) {
+      return addText(path, data);
+    }
+
+    JsonObject currentJson = GSON.fromJson(new String(current, StandardCharsets.UTF_8), JsonObject.class);
+    JsonObject toMerge = GSON.fromJson(data, JsonObject.class);
+
+    mergeJson(currentJson, toMerge);
+
+    addText(path, GSON.toJson(currentJson));
     return this;
   }
 
