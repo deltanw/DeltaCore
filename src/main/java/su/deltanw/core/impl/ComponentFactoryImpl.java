@@ -31,7 +31,7 @@ public class ComponentFactoryImpl implements ComponentFactory {
   private final Map<String, TextComponent> animatedCache = new HashMap<>();
   private final char[] pixels;
   private final char[] pixelsExt;
-  private char animatedChar = 0x0D80;
+  private char animatedChar = 0xAD0C;
 
   public ComponentFactoryImpl(char[] pixels, char[] pixelsExt) {
     this.pixels = pixels;
@@ -99,8 +99,7 @@ public class ComponentFactoryImpl implements ComponentFactory {
     return component.build();
   }
 
-  @Override
-  public TextComponent buildAnimatedComponent(String name, PackBuilder<? extends PackBuilder<?>> packBuilder, List<BufferedImage> frames, double duration, double height, double ascent) throws IOException {
+  protected TextComponent buildAnimatedComponent0(String name, PackBuilder<? extends PackBuilder<?>> packBuilder, List<BufferedImage> frames, double duration, double height, double ascent, boolean center) throws IOException {
     TextComponent cache = animatedCache.get(name);
     if (cache != null) {
       return cache;
@@ -112,41 +111,51 @@ public class ComponentFactoryImpl implements ComponentFactory {
 
     int imageHeight = frames.get(0).getHeight();
     int imageWidth = frames.get(0).getWidth();
-    float ratio = (float) imageWidth/ imageHeight;
+    float ratio = (float) imageWidth / imageHeight;
     int ceiledRatio = (int) Math.ceil(ratio);
-    boolean isMultiPart = ratio > 1.0;
-
-    frames = frames.stream().map(image -> {
-      BufferedImage centered = new BufferedImage(ceiledRatio * imageHeight, imageHeight, BufferedImage.TYPE_INT_ARGB);
-      Graphics2D graphics = centered.createGraphics();
-      graphics.drawImage(image, (int) ((ceiledRatio - ratio) / 2 * imageHeight), 0, null);
-      graphics.dispose();
-      return centered;
-    }).toList();
-
-    if (isMultiPart) {
-      int parts = (int) Math.ceil(ratio);
-      TextComponent.Builder builder = Component.text();
-
-      for (int i = 0; i < parts; i++) {
-        List<BufferedImage> subFrames = new ArrayList<>(frames.size());
-        for (BufferedImage frame : frames) {
-          int offset = frame.getHeight() * i;
-          int width = Math.min(frame.getWidth() - offset, frame.getHeight());
-          subFrames.add(frame.getSubimage(offset, 0, width, frame.getHeight()));
-        }
-
-        builder.append(buildAnimatedComponent(name + i, packBuilder, subFrames, duration));
-      }
-
-      return builder.build();
-    }
-
     int numFrames = frames.size();
     int framesPerLine = (int) Math.ceil(Math.sqrt(numFrames));
     int frameDim = Math.max(imageWidth, imageHeight);
     int totalWidth = framesPerLine * frameDim + 2;
     int totalHeight = framesPerLine * frameDim + 2;
+    boolean isMultiPart = totalHeight > 256;
+
+    if (center) {
+      frames = frames.stream().map(image -> {
+        BufferedImage centered = new BufferedImage(ceiledRatio * imageHeight, imageHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = centered.createGraphics();
+        graphics.drawImage(image, (int) ((ceiledRatio - ratio) / 2 * imageHeight), 0, null);
+        graphics.dispose();
+        return centered;
+      }).toList();
+    }
+
+    if (isMultiPart) {
+      TextComponent.Builder builder = Component.text();
+
+      int partSize = (254 / framesPerLine) / 5 * 5;
+      int partsX = (int) Math.ceil((double) imageWidth / partSize);
+      int partsY = (int) Math.ceil((double) imageHeight / partSize);
+
+      for (int j = 0; j < partsY; j++) {
+        for (int i = 0; i < partsX; i++) {
+          List<BufferedImage> subFrames = new ArrayList<>(frames.size());
+          for (BufferedImage frame : frames) {
+            int offsetX = partSize * i;
+            int offsetY = partSize * j;
+            int partWidth = Math.min(frame.getWidth() - offsetX, partSize);
+            int partHeight = Math.min(frame.getHeight() - offsetY, partSize);
+            subFrames.add(frame.getSubimage(offsetX, offsetY, partWidth, partHeight));
+          }
+
+          builder.append(buildAnimatedComponent0(name + (i + 1) + "x" + (j + 1), packBuilder, subFrames, duration, height, ascent - partsY * height + (partsY - j) * height, false));
+        }
+        builder.append(Component.text("ണ".repeat((partSize / 5) * partsX)));
+      }
+
+      return builder.build();
+    }
+
     BufferedImage mergedFrames = new BufferedImage(totalWidth, totalHeight, BufferedImage.TYPE_INT_ARGB);
     Graphics2D graphics = mergedFrames.createGraphics();
 
@@ -197,6 +206,11 @@ public class ComponentFactoryImpl implements ComponentFactory {
     animatedCache.put(name, component);
 
     return component;
+  }
+
+  @Override
+  public TextComponent buildAnimatedComponent(String name, PackBuilder<? extends PackBuilder<?>> packBuilder, List<BufferedImage> frames, double duration, double height, double ascent) throws IOException {
+    return buildAnimatedComponent0(name, packBuilder, frames, duration, height, ascent, false);
   }
 
   @Override
