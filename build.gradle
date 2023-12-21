@@ -35,7 +35,6 @@ dependencies {
   api 'net.elytrium.commons:config:1.2.1'
   api 'net.elytrium.commons:kyori:1.2.1'
   api 'com.mojang:brigadier:1.1.8'
-
 }
 
 def targetJavaVersion = 17

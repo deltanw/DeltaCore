@@ -5,6 +5,7 @@ import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
 import com.google.common.collect.Streams;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import java.util.Comparator;
 import java.util.List;
 import net.elytrium.commons.config.Placeholders;
