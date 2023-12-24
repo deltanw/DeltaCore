@@ -148,9 +148,11 @@ public class ComponentFactoryImpl implements ComponentFactory {
             subFrames.add(frame.getSubimage(offsetX, offsetY, partWidth, partHeight));
           }
 
-          builder.append(buildAnimatedComponent0(name + (i + 1) + "x" + (j + 1), packBuilder, subFrames, duration, height, ascent - partsY * height + (partsY - j) * height, false));
+          builder.append(buildAnimatedComponent0(name + "_" + (i + 1) + "x" + (j + 1), packBuilder, subFrames, duration, height, ascent - partsY * height + (partsY - j) * height, false));
         }
-        builder.append(Component.text("ണ".repeat((partSize / 5) * partsX)));
+        if (j != partsY - 1) {
+          builder.append(Component.text("ണ".repeat((int) (partsX * height))));
+        }
       }
 
       return builder.build();
