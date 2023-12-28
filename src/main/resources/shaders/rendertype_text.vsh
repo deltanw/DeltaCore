@@ -96,6 +96,10 @@ void main() {
         isAnimated = 1.0;
         float time = fract(GameTime * 1200.0 / loop_time);
         int frame = int(time * nframes);
+        if (loop_time == 0.0) {
+            time = vcolor.a;
+            vcolor.a = 1.0;
+        }
         int uframes = (dim.x - 2) / frame_dim;
         int u = frame % uframes;
         int v = frame / uframes;
