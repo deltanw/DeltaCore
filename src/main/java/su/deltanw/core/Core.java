@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.jeff_media.customblockdata.CustomBlockData;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -55,6 +56,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
+
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -141,12 +144,47 @@ public final class Core extends JavaPlugin implements Listener {
     return SERIALIZER;
   }
 
+  private Map<String, TextComponent> buildAnimatedComponents(File directory, Map<String, EmojisConfig.AnimatedEmojiProperties> properties) {
+    Map<String, TextComponent> componentMap = new HashMap<>();
+    if (!directory.mkdirs()) {
+      File[] files = directory.listFiles();
+      if (files != null) {
+        for (File file : files) {
+          if (file.isDirectory() || file.isHidden()) {
+            continue;
+          }
+
+          try (ImageInputStream input = ImageIO.createImageInputStream(file)) {
+            String filename = file.getName();
+            int index = filename.lastIndexOf('.');
+            String name = (index == -1) ? filename : filename.substring(0, index);
+            EmojisConfig.AnimatedEmojiProperties emojiProperties = properties.get(name);
+            if (emojiProperties != null) {
+              componentMap.put(name, this.componentFactory.buildAnimatedComponent(
+                      name, defaultPackBuilder, input, emojiProperties.DURATION, emojiProperties.HEIGHT, emojiProperties.ASCENT));
+            } else {
+              componentMap.put(name, this.componentFactory.buildAnimatedComponent(name, defaultPackBuilder, input));
+            }
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    }
+
+    return componentMap;
+  }
+
   private Map<String, TextComponent> listComponents(File directory) {
     Map<String, TextComponent> componentMap = new HashMap<>();
     if (!directory.mkdirs()) {
       File[] prefixFiles = directory.listFiles();
       if (prefixFiles != null) {
         for (File prefixFile : prefixFiles) {
+          if (prefixFile.isDirectory() || prefixFile.isHidden()) {
+            continue;
+          }
+
           try {
             BufferedImage prefixImage = ImageIO.read(prefixFile);
             String filename = prefixFile.getName();
@@ -425,6 +463,24 @@ public final class Core extends JavaPlugin implements Listener {
     }
   }
 
+  public void loadAnimatedEmojis() {
+    EmojisConfig.INSTANCE.reload(new File(getDataFolder(), "emojis.yml"));
+
+    componentFactory.reset();
+    Map<String, TextComponent> animatedEmojis = this.buildAnimatedComponents(new File(this.getDataFolder(), "emojis/animated"), EmojisConfig.INSTANCE.ANIMATED.PROPERTIES);
+    animatedEmojis.forEach((name, component) -> placeholders.addPlaceholder(new Placeholder(":", name, (data, player) ->
+            component.color(NamedTextColor.WHITE)
+                    .hoverEvent(HoverEvent.showText(
+                            Component.text(" ")
+                                    .append(component)
+                                    .append(Component.text("  :" + name + ":")
+                                            .color(NamedTextColor.GRAY))
+                    ))
+                    .clickEvent(ClickEvent.suggestCommand(":" + name + ":"))
+    )));
+    getLogger().info("Loaded " + animatedEmojis.size() + " animated emojis");
+  }
+
   public void loadPack() {
     try {
       Path staticPackPath = getDataFolder().toPath().resolve("pack/static");
@@ -443,6 +499,7 @@ public final class Core extends JavaPlugin implements Listener {
       }
 
       loadEntityModels();
+      loadAnimatedEmojis();
     } catch (IOException e) {
       throw new RuntimeException("Couldn't load static pack files.", e);
     }

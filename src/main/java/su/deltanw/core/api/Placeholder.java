@@ -1,5 +1,6 @@
 package su.deltanw.core.api;
 
+import java.util.Objects;
 import java.util.function.BiFunction;
 import net.kyori.adventure.text.Component;
 import org.bukkit.OfflinePlayer;
@@ -32,5 +33,23 @@ public class Placeholder {
 
   public BiFunction<String, OfflinePlayer, Component> getReplacement() {
     return replacement;
+  }
+
+  @Override
+  public String toString() {
+    return enclosing + name + enclosing;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(enclosing, name);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Placeholder that = (Placeholder) o;
+    return Objects.equals(enclosing, that.enclosing) && Objects.equals(name, that.name);
   }
 }

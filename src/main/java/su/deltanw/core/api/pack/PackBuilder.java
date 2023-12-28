@@ -20,9 +20,13 @@ public interface PackBuilder<T extends PackBuilder<T>> {
 
   T addText(String path, String text);
 
+  T mergeJson(String path, String data);
+
   T addFile(String path, byte[] data);
 
   Map<String, byte[]> getRawEntries();
+
+  byte[] getFile(String path);
 
   ResourcePack build() throws IOException;
 }
