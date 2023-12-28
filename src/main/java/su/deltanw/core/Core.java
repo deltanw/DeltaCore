@@ -144,7 +144,7 @@ public final class Core extends JavaPlugin implements Listener {
     return SERIALIZER;
   }
 
-  private Map<String, TextComponent> buildAnimatedComponents(File directory) {
+  private Map<String, TextComponent> buildAnimatedComponents(File directory, Map<String, EmojisConfig.AnimatedEmojiProperties> properties) {
     Map<String, TextComponent> componentMap = new HashMap<>();
     if (!directory.mkdirs()) {
       File[] files = directory.listFiles();
@@ -158,7 +158,13 @@ public final class Core extends JavaPlugin implements Listener {
             String filename = file.getName();
             int index = filename.lastIndexOf('.');
             String name = (index == -1) ? filename : filename.substring(0, index);
-            componentMap.put(name, this.componentFactory.buildAnimatedComponent(name, defaultPackBuilder, input));
+            EmojisConfig.AnimatedEmojiProperties emojiProperties = properties.get(name);
+            if (emojiProperties != null) {
+              componentMap.put(name, this.componentFactory.buildAnimatedComponent(
+                      name, defaultPackBuilder, input, emojiProperties.DURATION, emojiProperties.HEIGHT, emojiProperties.ASCENT));
+            } else {
+              componentMap.put(name, this.componentFactory.buildAnimatedComponent(name, defaultPackBuilder, input));
+            }
           } catch (IOException e) {
             e.printStackTrace();
           }
@@ -319,19 +325,6 @@ public final class Core extends JavaPlugin implements Listener {
     )));
     getLogger().info("Loaded " + emojis.size() + " emojis");
 
-    Map<String, TextComponent> animatedEmojis = this.buildAnimatedComponents(new File(this.getDataFolder(), "emojis/animated"));
-    animatedEmojis.forEach((name, component) -> placeholders.addPlaceholder(new Placeholder(":", name, (data, player) ->
-            component.color(NamedTextColor.WHITE)
-                    .hoverEvent(HoverEvent.showText(
-                            Component.text(" ")
-                                    .append(component)
-                                    .append(Component.text("  :" + name + ":")
-                                                    .color(NamedTextColor.GRAY))
-                    ))
-                    .clickEvent(ClickEvent.suggestCommand(":" + name + ":"))
-    )));
-    getLogger().info("Loaded " + animatedEmojis.size() + " animated emojis");
-
     this.placeholders.addPlaceholder(new Placeholder(
         "prefix",
         (data, player) -> this.prefixes.getOrDefault(this.getPrefix(player.getUniqueId()), Component.empty())
@@ -470,6 +463,24 @@ public final class Core extends JavaPlugin implements Listener {
     }
   }
 
+  public void loadAnimatedEmojis() {
+    EmojisConfig.INSTANCE.reload(new File(getDataFolder(), "emojis.yml"));
+
+    componentFactory.reset();
+    Map<String, TextComponent> animatedEmojis = this.buildAnimatedComponents(new File(this.getDataFolder(), "emojis/animated"), EmojisConfig.INSTANCE.ANIMATED.PROPERTIES);
+    animatedEmojis.forEach((name, component) -> placeholders.addPlaceholder(new Placeholder(":", name, (data, player) ->
+            component.color(NamedTextColor.WHITE)
+                    .hoverEvent(HoverEvent.showText(
+                            Component.text(" ")
+                                    .append(component)
+                                    .append(Component.text("  :" + name + ":")
+                                            .color(NamedTextColor.GRAY))
+                    ))
+                    .clickEvent(ClickEvent.suggestCommand(":" + name + ":"))
+    )));
+    getLogger().info("Loaded " + animatedEmojis.size() + " animated emojis");
+  }
+
   public void loadPack() {
     try {
       Path staticPackPath = getDataFolder().toPath().resolve("pack/static");
@@ -488,6 +499,7 @@ public final class Core extends JavaPlugin implements Listener {
       }
 
       loadEntityModels();
+      loadAnimatedEmojis();
     } catch (IOException e) {
       throw new RuntimeException("Couldn't load static pack files.", e);
     }

@@ -2,16 +2,16 @@ package su.deltanw.core.impl;
 
 import su.deltanw.core.api.Placeholder;
 import su.deltanw.core.api.Placeholders;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+
+import java.util.*;
+
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import org.bukkit.OfflinePlayer;
 
 public class PlaceholdersImpl implements Placeholders {
 
-  private final List<Placeholder> placeholders = new ArrayList<>();
+  private final Set<Placeholder> placeholders = new LinkedHashSet<>();
 
   @Override
   public void addPlaceholder(Placeholder placeholder) {

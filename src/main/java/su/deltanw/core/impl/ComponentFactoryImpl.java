@@ -31,7 +31,7 @@ public class ComponentFactoryImpl implements ComponentFactory {
   private final Map<String, TextComponent> animatedCache = new HashMap<>();
   private final char[] pixels;
   private final char[] pixelsExt;
-  private char animatedChar = 0xAD0C;
+  private char animatedChar = 0;
 
   public ComponentFactoryImpl(char[] pixels, char[] pixelsExt) {
     this.pixels = pixels;
@@ -216,7 +216,7 @@ public class ComponentFactoryImpl implements ComponentFactory {
   }
 
   @Override
-  public TextComponent buildAnimatedComponent(String name, PackBuilder<? extends PackBuilder<?>> packBuilder, ImageInputStream input, double fontHeight, double fontAscent) throws IOException {
+  public TextComponent buildAnimatedComponent(String name, PackBuilder<? extends PackBuilder<?>> packBuilder, ImageInputStream input, double duration, double fontHeight, double fontAscent) throws IOException {
     TextComponent cache = animatedCache.get(name);
     if (cache != null) {
       return cache;
@@ -230,7 +230,7 @@ public class ComponentFactoryImpl implements ComponentFactory {
 
     int width = -1;
     int height = -1;
-    int totalDelay = 0;
+    int totalTime = 0;
 
     IIOMetadata metadata = reader.getStreamMetadata();
     if (metadata != null) {
@@ -292,7 +292,7 @@ public class ComponentFactoryImpl implements ComponentFactory {
       BufferedImage copy = new BufferedImage(master.getColorModel(), master.copyData(null), master.isAlphaPremultiplied(), null);
       frames.add(copy);
 
-      totalDelay += delay * 10;
+      totalTime += delay * 10;
       disposals.add(disposal);
 
       if (disposal.equals("restoreToPrevious")) {
@@ -314,6 +314,12 @@ public class ComponentFactoryImpl implements ComponentFactory {
     }
     reader.dispose();
 
-    return buildAnimatedComponent(name, packBuilder, frames, (double) totalDelay / 1000.0, fontHeight, fontAscent);
+    return buildAnimatedComponent(name, packBuilder, frames, duration == -1.0 ? (double) totalTime / 1000.0 : duration, fontHeight, fontAscent);
+  }
+
+  @Override
+  public void reset() {
+    this.animatedCache.clear();
+    this.animatedChar = 0xAD0C;
   }
 }

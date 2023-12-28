@@ -19,9 +19,19 @@ public interface ComponentFactory {
     return buildAnimatedComponent(name, packBuilder, frames, duration, 10, 8);
   }
 
-  TextComponent buildAnimatedComponent(String name, PackBuilder<? extends PackBuilder<?>> packBuilder, ImageInputStream input, double height, double ascent) throws IOException;
+  TextComponent buildAnimatedComponent(String name, PackBuilder<? extends PackBuilder<?>> packBuilder, ImageInputStream input, double duration, double height, double ascent) throws IOException;
+
+  default TextComponent buildAnimatedComponent(String name, PackBuilder<? extends PackBuilder<?>> packBuilder, ImageInputStream input, double height, double ascent) throws IOException {
+    return buildAnimatedComponent(name, packBuilder, input, -1.0, height, ascent);
+  }
+
+  default TextComponent buildAnimatedComponent(String name, PackBuilder<? extends PackBuilder<?>> packBuilder, ImageInputStream input, double duration) throws IOException {
+    return buildAnimatedComponent(name, packBuilder, input, duration, 10, 8);
+  }
 
   default TextComponent buildAnimatedComponent(String name, PackBuilder<? extends PackBuilder<?>> packBuilder, ImageInputStream input) throws IOException {
-    return buildAnimatedComponent(name, packBuilder, input, 10, 8);
+    return buildAnimatedComponent(name, packBuilder, input, -1.0, 10, 8);
   }
+
+  void reset();
 }
